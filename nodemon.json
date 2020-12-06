@@ -1,0 +1,7 @@
+{
+  "env":{
+    "MONGO_USER":"mongodbuser",
+    "MONGO_PASSWORD":"mongodbpassword",
+    "MONGO_DEFAULT_DATABASE":"CaroOnline"
+  }
+}
