@@ -34,6 +34,11 @@ const userSchema = mongoose.Schema(
         }
       },
     },
+    isOnline: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
     imageUrl: {
       type: String,
       trim: true,

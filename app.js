@@ -8,6 +8,7 @@ const httpStatus = require('http-status');
 const passport = require('passport');
 
 const { errorConverter, errorHandler } = require('./middlewares/error.mdw');
+const ApiError = require('./utils/ApiError');
 
 const app = express();
 
@@ -15,7 +16,16 @@ const PORT = process.env.PORT || 4000;
 
 app.use(bodyParser.json());
 app.use(morgan('dev'));
-app.use(cors());
+// app.use(cors());
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'OPTIONS, GET, POST, PUT, PATCH, DELETE'
+  );
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -39,8 +49,17 @@ mongoose
   )
   .then(() => {
     console.log('Connect Mongodb Successfully');
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`Server is running on PORT ${PORT}`);
     });
-  })
+
+    const io = require('./utils/socketio').init(server);
+    io.on('connection', (socket) => {
+      console.log('Client connected ' + socket.id);
+      socket.on('disconnect',(reason) => {
+        // Change isOnline to false 
+        // Emit user-offline
+      })
+    });
+  })  
   .catch((error) => console.log(error));

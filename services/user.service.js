@@ -42,9 +42,14 @@ const getUserById = (id) => {
   return User.findById(id);
 };
 
+const getAllUser = () => {
+  return User.find();
+};
+
 module.exports = {
   createUser,
   getUserByEmail,
   getUserById,
-  processUserLoginFacebookGoogle
+  processUserLoginFacebookGoogle,
+  getAllUser,
 };
