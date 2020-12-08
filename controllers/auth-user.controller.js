@@ -38,7 +38,7 @@ const loginFacebook = catchAsync(async (req, res) => {
   });
 });
 
-const loginGoole = catchAsync(async (req, res) => {
+const loginGoogle = catchAsync(async (req, res) => {
   const { idToken } = req.body;
   const {
     email_verified,
@@ -62,5 +62,5 @@ module.exports = {
   register,
   login,
   loginFacebook,
-  loginGoole,
+  loginGoogle,
 };

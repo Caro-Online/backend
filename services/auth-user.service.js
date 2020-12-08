@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 const { OAuth2Client } = require('google-auth-library');
 
-const { userService } = require('./index');
+const { userService } = require('./user.service');
 const ApiError = require('../utils/ApiError');
 
 const client = new OAuth2Client(
