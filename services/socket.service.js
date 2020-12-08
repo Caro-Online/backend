@@ -6,6 +6,13 @@ const emitUserOnline = (userId) => {
   });
 };
 
+const emitUserOffline = (userId) => {
+  socketIo.getIO().emit('user-offline', {
+    userId,
+  });
+};
+
 module.exports = {
   emitUserOnline,
+  emitUserOffline,
 };
