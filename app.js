@@ -11,7 +11,7 @@ const { errorConverter, errorHandler } = require('./middlewares/error.mdw');
 const ApiError = require('./utils/ApiError');
 const { User } = require('./models');
 const { socketService } = require('./services');
-
+require('dotenv').config();
 const app = express();
 
 const PORT = process.env.PORT || 4000;
