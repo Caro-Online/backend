@@ -10,7 +10,6 @@ const passport = require('passport');
 const { errorConverter, errorHandler } = require('./middlewares/error.mdw');
 const ApiError = require('./utils/ApiError');
 const { User } = require('./models');
-const { async } = require('crypto-random-string');
 const { socketService } = require('./services');
 
 const app = express();
