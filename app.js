@@ -9,6 +9,9 @@ const passport = require('passport');
 
 const { errorConverter, errorHandler } = require('./middlewares/error.mdw');
 const ApiError = require('./utils/ApiError');
+const { User } = require('./models');
+const { async } = require('crypto-random-string');
+const { socketService } = require('./services');
 
 const app = express();
 
@@ -56,10 +59,16 @@ mongoose
     const io = require('./utils/socketio').init(server);
     io.on('connection', (socket) => {
       console.log('Client connected ' + socket.id);
-      socket.on('disconnect',(reason) => {
-        // Change isOnline to false 
+      const userId = socket.handshake.query.userId;
+      socket.on('disconnect', async (reason) => {
+        console.log('Disconnect ' + socket.id);
+        // Change isOnline to false
+        const user = await User.findById(userId);
+        user.isOnline = false;
+        await user.save();
         // Emit user-offline
-      })
+        socketService.emitUserOffline(userId);
+      });
     });
-  })  
+  })
   .catch((error) => console.log(error));
