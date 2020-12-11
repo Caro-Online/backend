@@ -61,6 +61,7 @@ mongoose
       const userId = socket.handshake.query.userId;
       socket.on('disconnect', async (reason) => {
         console.log('Disconnect ' + socket.id);
+        console.log(reason);
         // Change isOnline to false
         const user = await User.findById(userId);
         user.isOnline = false;
