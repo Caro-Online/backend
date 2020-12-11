@@ -10,9 +10,8 @@ const passport = require('passport');
 const { errorConverter, errorHandler } = require('./middlewares/error.mdw');
 const ApiError = require('./utils/ApiError');
 const { User } = require('./models');
-const { async } = require('crypto-random-string');
 const { socketService } = require('./services');
-
+require('dotenv').config();
 const app = express();
 
 const PORT = process.env.PORT || 4000;
@@ -62,6 +61,7 @@ mongoose
       const userId = socket.handshake.query.userId;
       socket.on('disconnect', async (reason) => {
         console.log('Disconnect ' + socket.id);
+        console.log(reason);
         // Change isOnline to false
         const user = await User.findById(userId);
         user.isOnline = false;

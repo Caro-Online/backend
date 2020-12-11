@@ -1,13 +1,13 @@
-const httpStatus = require('http-status');
+const httpStatus = require("http-status");
 
-const catchAsync = require('../utils/catchAsync');
+const catchAsync = require("../utils/catchAsync");
 const {
   authUserService,
   tokenService,
   userService,
   socketService,
-} = require('../services');
-const { default: fetch } = require('node-fetch');
+} = require("../services");
+const { default: fetch } = require("node-fetch");
 
 const doLoginStuff = (user) => {
   socketService.emitUserOnline(user._id);
@@ -30,7 +30,12 @@ const login = catchAsync(async (req, res) => {
   user = await doLoginStuff(user);
   res
     .status(httpStatus.OK)
-    .json({ success: true, accessToken: token, userId: user._id.toString() });
+    .json({
+      success: true,
+      accessToken: token,
+      userId: user._id.toString(),
+      user,
+    });
 });
 
 const loginFacebook = catchAsync(async (req, res) => {

@@ -35,7 +35,11 @@ const processUserLoginFacebookGoogle = async (name, email) => {
 };
 
 const getUserByEmail = (email) => {
-  return User.findOne({ email: email });
+  return User.findOne({ email: email, role: 'User' });
+};
+
+const getAdminByEmail = (email) => {
+  return User.findOne({ email: email, role: 'Admin' });
 };
 
 const getUserById = (id) => {
@@ -49,6 +53,7 @@ const getAllUser = () => {
 module.exports = {
   createUser,
   getUserByEmail,
+  getAdminByEmail,
   getUserById,
   processUserLoginFacebookGoogle,
   getAllUser,
