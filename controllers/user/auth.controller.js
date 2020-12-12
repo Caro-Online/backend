@@ -1,12 +1,12 @@
 const httpStatus = require('http-status');
 
-const catchAsync = require('../utils/catchAsync');
+const catchAsync = require('../../utils/catchAsync');
 const {
   authUserService,
   tokenService,
   userService,
   socketService,
-} = require('../services');
+} = require('../../services');
 const { default: fetch } = require('node-fetch');
 
 const doLoginStuff = (user) => {
