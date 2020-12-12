@@ -35,37 +35,41 @@ const login = catchAsync(async (req, res) => {
 
 const loginFacebook = catchAsync(async (req, res) => {
   const { userId, accessToken } = req.body;
+  console.log(userId, accessToken);
   const { name, email } = await authUserService.verifyAccessTokenFromFacebook(
     userId,
     accessToken
   );
-  const { uId, token } = await userService.processUserLoginFacebookGoogle(
+  let { user, token } = await userService.processUserLoginFacebookGoogle(
     name,
     email
   );
+  user = await doLoginStuff(user);
   res.status(httpStatus.OK).json({
     success: true,
     token,
-    userId: uId.toString(),
+    userId: user._id.toString(),
   });
 });
 
 const loginGoogle = catchAsync(async (req, res) => {
   const { idToken } = req.body;
+  console.log(req.body);
   const {
     email_verified,
     name,
     email,
   } = await authUserService.verifyIdTokenFromGoole(idToken);
   if (email_verified) {
-    const { uId, token } = await userService.processUserLoginFacebookGoogle(
+    let { user, token } = await userService.processUserLoginFacebookGoogle(
       name,
       email
     );
+    user = await doLoginStuff(user);
     res.status(httpStatus.OK).json({
       success: true,
       token,
-      userId: uId.toString(),
+      userId: user._id.toString(),
     });
   }
 });
