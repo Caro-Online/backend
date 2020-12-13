@@ -28,9 +28,12 @@ const login = catchAsync(async (req, res) => {
   );
   const token = await tokenService.generateAuthToken(user);
   user = await doLoginStuff(user);
-  res
-    .status(httpStatus.OK)
-    .json({ success: true, accessToken: token, userId: user._id.toString() });
+  res.status(httpStatus.OK).json({
+    success: true,
+    accessToken: token,
+    userId: user._id.toString(),
+    userName: user.name,
+  });
 });
 
 const loginFacebook = catchAsync(async (req, res) => {
@@ -49,6 +52,7 @@ const loginFacebook = catchAsync(async (req, res) => {
     success: true,
     token,
     userId: user._id.toString(),
+    userName: user.name,
   });
 });
 
@@ -70,6 +74,7 @@ const loginGoogle = catchAsync(async (req, res) => {
       success: true,
       token,
       userId: user._id.toString(),
+      userName: user.name,
     });
   }
 });
