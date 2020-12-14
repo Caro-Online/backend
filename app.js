@@ -10,7 +10,8 @@ const passport = require('passport');
 const { errorConverter, errorHandler } = require('./middlewares/error.mdw');
 const ApiError = require('./utils/ApiError');
 const { User } = require('./models');
-const { socketService } = require('./services');
+const { socketService, gameService, userService } = require('./services');
+const { async } = require('crypto-random-string');
 require('dotenv').config();
 const app = express();
 
@@ -59,6 +60,56 @@ mongoose
     io.on('connection', (socket) => {
       console.log('Client connected ' + socket.id);
       const userId = socket.handshake.query.userId;
+
+      socket.on('join', async ({ userId, roomId }, callback) => {
+        // const { error, user } = addUser({ id: socket.id, name, room });
+
+        let user;
+        try {
+          //Update phòng user đang ở
+          user = await userService.updateCurrentRoom(userId, roomId);
+        } catch (error) {
+          callback(error);
+        }
+
+        //Cho user tham gia vào phòng
+        socket.join(roomId);
+
+        //Lấy thông tin về phòng
+        const room = await gameService.getRoomByRoomId(roomId);
+
+        //Message tới user đó
+        socket.emit('message', {
+          user: 'admin',
+          text: `${user.name}, Chào mừng bạn đến với phòng ${room.name}.`,
+        });
+        //Message tới các user khác trong phòng
+        socket.broadcast.to(user.currentRoom).emit('message', {
+          user: 'admin',
+          text: `${user.name} đã tham gia phòng!`,
+        });
+        //Truyền roomData xuống client
+        // io.to(user.room).emit('roomData', {
+        //   room: user.room,
+        //   users: getUsersInRoom(user.room),
+        // });
+
+        callback();
+      });
+
+      //Khi người dùng gửi message
+      socket.on('sendMessage', async ({ message, userId }, callback) => {
+        const user = await userService.getUserById(userId);
+
+        io.to(user.currentRoom).emit('message', {
+          userId: user._id,
+          userName: user.name,
+          text: message,
+        });
+
+        callback();
+      });
+
       socket.on('disconnect', async (reason) => {
         console.log('Disconnect ' + socket.id);
         console.log(reason);

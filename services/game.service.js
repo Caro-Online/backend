@@ -47,8 +47,14 @@ const createRoom = (name, userId, rule) => {
   return room.save();
 };
 
+// const updateCurrentRoom = async (userId, roomId) => {
+//   const room = await getRoomByRoomId(roomId);
+//   room.
+// };
+
 module.exports = {
   getAllRoom,
   getRoomByRoomId,
   createRoom,
+  // updateCurrentRoom,
 };
