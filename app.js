@@ -100,7 +100,11 @@ mongoose
       //Khi người dùng gửi message
       socket.on('sendMessage', async ({ message, userId }, callback) => {
         const user = await userService.getUserById(userId);
-
+        //Lưu lại message
+        const room = await gameService.getRoomByRoomId(user.currentRoom);
+        room.chat.push({ user: user._id, content: message });
+        await room.save();
+        //Gửi mesage đến tất cả user trong phòng
         io.to(user.currentRoom).emit('message', {
           userId: user._id,
           userName: user.name,
