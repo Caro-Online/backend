@@ -50,6 +50,12 @@ const getAllUser = () => {
   return User.find();
 };
 
+const updateCurrentRoom = async (userId, roomId) => {
+  const user = await getUserById(userId);
+  user.currentRoom = roomId;
+  return await user.save();
+};
+
 module.exports = {
   createUser,
   getUserByEmail,
@@ -57,4 +63,5 @@ module.exports = {
   getUserById,
   processUserLoginFacebookGoogle,
   getAllUser,
+  updateCurrentRoom,
 };

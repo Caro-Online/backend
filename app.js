@@ -9,8 +9,9 @@ const passport = require('passport');
 
 const { errorConverter, errorHandler } = require('./middlewares/error.mdw');
 const ApiError = require('./utils/ApiError');
-const { User } = require('./models');
-const { socketService } = require('./services');
+const { User, Game } = require('./models');
+const { socketService, gameService, userService } = require('./services');
+const { async } = require('crypto-random-string');
 require('dotenv').config();
 const app = express();
 
@@ -59,13 +60,79 @@ mongoose
     io.on('connection', (socket) => {
       console.log('Client connected ' + socket.id);
       const userId = socket.handshake.query.userId;
+
+      socket.on('join', async ({ userId, roomId }, callback) => {
+        // const { error, user } = addUser({ id: socket.id, name, room });
+
+        let user;
+        try {
+          //Update phòng user đang ở
+          user = await userService.updateCurrentRoom(userId, roomId);
+        } catch (error) {
+          callback(error);
+        }
+
+        //Cho user tham gia vào phòng
+        socket.join(roomId);
+
+        //Lấy thông tin về phòng
+        const room = await gameService.getRoomByRoomId(roomId);
+
+        //Message tới user đó
+        socket.emit('message', {
+          userName: 'admin',
+          text: `${user.name}, Chào mừng bạn đến với phòng ${room.name}.`,
+        });
+        //Message tới các user khác trong phòng
+        socket.broadcast.to(user.currentRoom).emit('message', {
+          userName: 'admin',
+          text: `${user.name} đã tham gia phòng!`,
+        });
+        //Truyền roomData xuống client
+        // io.to(user.room).emit('roomData', {
+        //   room: user.room,
+        //   users: getUsersInRoom(user.room),
+        // });
+
+        callback();
+      });
+
+      //Khi người dùng gửi message
+      socket.on('sendMessage', async ({ message, userId }, callback) => {
+        const user = await userService.getUserById(userId);
+        //Lưu lại message
+        const room = await gameService.getRoomByRoomId(user.currentRoom);
+        room.chat.push({ user: user._id, content: message });
+        await room.save();
+        //Gửi mesage đến tất cả user trong phòng
+        io.to(user.currentRoom).emit('message', {
+          userId: user._id,
+          userName: user.name,
+          text: message,
+        });
+
+        callback();
+      });
+
       socket.on('disconnect', async (reason) => {
         console.log('Disconnect ' + socket.id);
         console.log(reason);
-        // Change isOnline to false
         const user = await User.findById(userId);
+        // Thông báo cho các user khác trong phòng rằng user này đã out khỏi phòng
+        io.to(user.currentRoom).emit('message', {
+          userName: 'admin',
+          text: `${user.name} đã rời phòng.`,
+        });
+        // Emit lại thông tin phòng
+        const room = await gameService.getRoomByRoomId(user.currentRoom);
+        io.to(user.currentRoom).emit('roomData', {
+          room: room,
+        });
+        // Đổi isOnline của user thành false và currentRoom thành null
         user.isOnline = false;
+        user.currentRoom = null;
         await user.save();
+        //
         // Emit user-offline
         socketService.emitUserOffline(userId);
       });

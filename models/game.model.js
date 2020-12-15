@@ -45,7 +45,9 @@ const gameSchema = mongoose.Schema(
       default: 'BLOCK_TWO_SIDE',
       enum: ['NOT_BLOCK_TWO_SIDE', 'BLOCK_TWO_SIDE'],
     },
-    chat: [{ userId: Schema.Types.ObjectId, content: String, date: Date }],
+    chat: [
+      { user: { type: Schema.Types.ObjectId, ref: 'User' }, content: String },
+    ],
     history: [{ x: Number, y: Number }],
   },
   { timestamps: true }

@@ -34,6 +34,10 @@ const userSchema = mongoose.Schema(
         }
       },
     },
+    currentRoom: {
+      type: String,
+      default: null,
+    },
     role: {
       type: String,
       required: true,
