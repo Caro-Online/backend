@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 
-const catchAsync = require('../utils/catchAsync');
-const { userService } = require('../services');
+const catchAsync = require('../../utils/catchAsync');
+const { userService } = require('../../services');
 
 const getAllUser = catchAsync(async (req, res) => {
   const users = await userService.getAllUser();

@@ -1,9 +1,11 @@
-const authUserRoute = require('./auth-user.route');
-const authAdminRoute = require('./auth-admin.route');
-const userRoute = require('./user.route');
+const authUserRoute = require('./user/auth.route');
+const authAdminRoute = require('./admin/auth.route');
+const userRoute = require('./user/user.route');
+const gameRoute = require('./user/game.route')
 
 module.exports = {
   authUserRoute,
   authAdminRoute,
   userRoute,
+  gameRoute
 };

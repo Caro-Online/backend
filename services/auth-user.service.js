@@ -1,5 +1,6 @@
 const httpStatus = require("http-status");
 const { OAuth2Client } = require("google-auth-library");
+const fetch = require("node-fetch");
 
 const userService = require("./user.service");
 const ApiError = require("../utils/ApiError");
@@ -25,7 +26,8 @@ const verifyAccessTokenFromFacebook = async (userId, accessToken) => {
   return response;
 };
 
-const verifyIdTokenFromGoogle = async (idToken) => {
+const verifyIdTokenFromGoole = async (idToken) => {
+  console.log(idToken);
   const response = await client.verifyIdToken({
     idToken,
     audience:
