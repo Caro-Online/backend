@@ -26,7 +26,7 @@ const verifyAccessTokenFromFacebook = async (userId, accessToken) => {
   return response;
 };
 
-const verifyIdTokenFromGoole = async (idToken) => {
+const verifyIdTokenFromGoogle = async (idToken) => {
   console.log(idToken);
   const response = await client.verifyIdToken({
     idToken,

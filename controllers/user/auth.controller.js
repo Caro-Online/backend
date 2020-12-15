@@ -63,7 +63,7 @@ const loginGoogle = catchAsync(async (req, res) => {
     email_verified,
     name,
     email,
-  } = await authUserService.verifyIdTokenFromGoole(idToken);
+  } = await authUserService.verifyIdTokenFromGoogle(idToken);
   if (email_verified) {
     let { user, token } = await userService.processUserLoginFacebookGoogle(
       name,
