@@ -1,13 +1,15 @@
-const httpStatus = require("http-status");
+const httpStatus = require('http-status');
+const { default: fetch } = require('node-fetch');
+const { v4: uuidv4 } = require('uuid');
 
-const catchAsync = require("../../utils/catchAsync");
+const catchAsync = require('../../utils/catchAsync');
 const {
   authUserService,
   tokenService,
   userService,
   socketService,
-} = require("../../services");
-const { default: fetch } = require("node-fetch");
+} = require('../../services');
+const { transporter } = require('../../config/nodemailer.config');
 
 const doLoginStuff = (user) => {
   socketService.emitUserOnline(user._id);
@@ -79,9 +81,82 @@ const loginGoogle = catchAsync(async (req, res) => {
   }
 });
 
+const sendResetPasswordEmail = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  // Tạo unique resetToken
+  const resetToken = uuidv4();
+  // Tìm user
+  const user = await userService.getUserByEmail(email);
+  if (!user) {
+    return res.status(httpStatus.NOT_FOUND).json({
+      success: false,
+      message: 'User with associated email not found!',
+    });
+  } else {
+    // Nếu tìm thấy user với email đó
+    user.resetToken = resetToken;
+    user.resetTokenExpiration = Date.now() + 36000000; // Sau 1h không đổi mật khẩu sẽ timeout
+    await user.save();
+    //Send mail
+    const mailOptions = {
+      from: 'onlinecaroplay@gmail.com',
+      to: email,
+      subject: 'Đặt lại mật khẩu',
+      html: `
+      <p>Bạn đã yêu cầu đặt lại mật khẩu.Bấm vào <a href="http://localhost:3000/reset-password/${resetToken}>link</a> này để đặt lại mật khẩu</p>
+      `,
+    };
+    transporter.sendMail(mailOptions, (err, data) => {
+      if (err) {
+        console.log('Lỗi khi gửi mail', err);
+      } else {
+        console.log('Email đã được gửi!');
+      }
+    });
+    res.status(httpStatus.OK).json({
+      success: true,
+    });
+  }
+});
+
+const getResetPassword = catchAsync(async (req, res) => {
+  const { resetToken } = req.params;
+  const user = await userService.getUserWithResetToken(resetToken);
+  if (!user) {
+    return res.status(httpStatus.NOT_FOUND).json({
+      success: false,
+      message: 'ResetToken not found or has been expired!',
+    });
+  } else {
+    return res
+      .status(httpStatus.OK)
+      .json({ success: true, userId: user._id.toString() });
+  }
+});
+
+const postNewPassword = catchAsync(async (req, res) => {
+  const { userId, password, resetToken } = req.body;
+  let user = await userService.getUserWithResetTokenAndUserId(
+    resetToken,
+    userId
+  );
+  if (!user) {
+    return res.status(httpStatus.NOT_FOUND).json({
+      success: false,
+      message: 'ResetToken not found or has been expired!',
+    });
+  } else {
+    user = await userService.updateUserPassword(user, password);
+    return res.status(httpStatus.OK).json({ success: true });
+  }
+});
+
 module.exports = {
   register,
   login,
   loginFacebook,
   loginGoogle,
+  sendResetPasswordEmail,
+  getResetPassword,
+  postNewPassword,
 };

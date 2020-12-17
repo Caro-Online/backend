@@ -21,6 +21,14 @@ const createUser = async (userBody) => {
   return user;
 };
 
+const updateUserPassword = async (user, password) => {
+  const hashPassword = await bcrypt.hash(password, 12);
+  user.password = hashPassword;
+  user.resetToken = undefined;
+  user.resetTokenExpiration = undefined;
+  return await user.save();
+};
+
 const processUserLoginFacebookGoogle = async (name, email) => {
   let user = await getUserByEmail(email);
   if (!user) {
@@ -50,6 +58,21 @@ const getAllUser = () => {
   return User.find();
 };
 
+const getUserWithResetToken = (resetToken) => {
+  return User.findOne({
+    resetToken,
+    resetTokenExpiration: { $gt: Date.now() },
+  });
+};
+
+const getUserWithResetTokenAndUserId = (resetToken, userId) => {
+  return User.findOne({
+    resetToken,
+    resetTokenExpiration: { $gt: Date.now() },
+    _id: userId,
+  });
+};
+
 const updateCurrentRoom = async (userId, roomId) => {
   const user = await getUserById(userId);
   user.currentRoom = roomId;
@@ -63,5 +86,8 @@ module.exports = {
   getUserById,
   processUserLoginFacebookGoogle,
   getAllUser,
+  getUserWithResetToken,
+  getUserWithResetTokenAndUserId,
   updateCurrentRoom,
+  updateUserPassword,
 };

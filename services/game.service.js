@@ -32,7 +32,7 @@ const getRoomByRoomId = async (roomId) => {
 
 const createRoom = (name, userId, rule) => {
   // Create random roomId
-  const roomId = cryptoRandomString({ length: 6, type: 'base64' });
+  const roomId = cryptoRandomString({ length: 6, type: 'hex' });
   const room = new Game({
     roomId,
     name,
