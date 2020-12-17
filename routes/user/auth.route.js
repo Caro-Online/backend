@@ -8,5 +8,8 @@ router.post('/register', authUserController.register);
 router.post('/login', authUserController.login);
 router.post('/login-facebook', authUserController.loginFacebook);
 router.post('/login-google', authUserController.loginGoogle);
+router.post('/reset-password', authUserController.sendResetPasswordEmail);
+router.get('/reset-password/:resetToken', authUserController.getResetPassword);
+router.post('/new-password', authUserController.postNewPassword);
 
 module.exports = router;
