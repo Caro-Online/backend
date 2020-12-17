@@ -32,7 +32,7 @@ const login = catchAsync(async (req, res) => {
   user = await doLoginStuff(user);
   res.status(httpStatus.OK).json({
     success: true,
-    accessToken: token,
+    token: token,
     userId: user._id.toString(),
     userName: user.name,
   });

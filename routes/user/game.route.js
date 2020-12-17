@@ -14,6 +14,13 @@ router.get(
   gameController.getAllRoom
 );
 
+//Lấy danh sách các phòng chơi
+router.get(
+  '/',
+  passport.authenticate('jwt', { session: false }),
+  gameController.getAllRoom
+);
+
 //Lấy thông tin phòng chơi
 router.get(
   '/:roomId',
