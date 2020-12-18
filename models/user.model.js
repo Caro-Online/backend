@@ -34,6 +34,11 @@ const userSchema = mongoose.Schema(
         }
       },
     },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerifyToken: String,
     currentRoom: {
       type: String,
       default: null,

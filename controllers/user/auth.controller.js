@@ -18,8 +18,44 @@ const doLoginStuff = (user) => {
 };
 
 const register = catchAsync(async (req, res) => {
-  const user = await userService.createUser(req.body);
+  // Tạo email verify token
+  const emailVerifyToken = uuidv4();
+  // Tạo user
+  const user = await userService.createUser({ ...req.body, emailVerifyToken });
+  // Gửi email verify
+  const mailOptions = {
+    from: 'onlinecaroplay@gmail.com',
+    to: req.body.email,
+    subject: 'Xác nhận email',
+    html: `
+    <p>Cảm ơn bạn vì đã đăng ký tài khoản trong hệ thống CaroOnline của chúng tôi</p>
+    <p>Vui lòng nhấn vào <a href="http://localhost:3000/confirm-registration/${emailVerifyToken}">link</a> sau để xác nhận email</p>
+    `,
+  };
+  transporter.sendMail(mailOptions, (err, data) => {
+    if (err) {
+      console.log('Lỗi khi gửi mail', err);
+    } else {
+      console.log('Email đã được gửi!');
+    }
+  });
   res.status(httpStatus.CREATED).json({ success: true, userId: user._id });
+});
+
+const confirmRegistration = catchAsync(async (req, res) => {
+  const { emailVerifyToken } = req.params;
+  const user = await userService.getUserWithEmailVerifyToken(emailVerifyToken);
+  if (!user) {
+    return res.status(httpStatus.NOT_FOUND).json({
+      success: false,
+      message: 'Cannot find user with associated emailVerifyToken',
+    });
+  } else {
+    user.emailVerifyToken = undefined;
+    user.isEmailVerified = true;
+    user.save();
+    return res.status(httpStatus.OK).json({ success: true });
+  }
 });
 
 const login = catchAsync(async (req, res) => {
@@ -153,6 +189,7 @@ const postNewPassword = catchAsync(async (req, res) => {
 
 module.exports = {
   register,
+  confirmRegistration,
   login,
   loginFacebook,
   loginGoogle,
