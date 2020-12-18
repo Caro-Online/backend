@@ -22,6 +22,7 @@ const getAllRoom = () => {
   );
 };
 
+
 const getRoomByRoomId = async (roomId) => {
   const room = await Game.findOne({ roomId }).populate('chat.user');
   if (!room) {
