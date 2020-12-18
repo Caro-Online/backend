@@ -9,9 +9,8 @@ const passport = require('passport');
 
 const { errorConverter, errorHandler } = require('./middlewares/error.mdw');
 const ApiError = require('./utils/ApiError');
-const { User, Game } = require('./models');
-const { socketService, gameService, userService } = require('./services');
-const { async } = require('crypto-random-string');
+const { User } = require('./models');
+const { socketService, roomService, userService } = require('./services');
 require('dotenv').config();
 const app = express();
 
@@ -20,15 +19,6 @@ const PORT = process.env.PORT || 4000;
 app.use(bodyParser.json());
 app.use(morgan('dev'));
 app.use(cors());
-// app.use((req, res, next) => {
-//   res.setHeader('Access-Control-Allow-Origin', '*');
-//   res.setHeader(
-//     'Access-Control-Allow-Methods',
-//     'OPTIONS, GET, POST, PUT, PATCH, DELETE'
-//   );
-//   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-//   next();
-// });
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -76,7 +66,7 @@ mongoose
         socket.join(roomId);
 
         //Lấy thông tin về phòng
-        const room = await gameService.getRoomByRoomId(roomId);
+        const room = await roomService.getRoomByRoomId(roomId);
 
         //Message tới user đó
         socket.emit('message', {
@@ -101,7 +91,7 @@ mongoose
       socket.on('sendMessage', async ({ message, userId }, callback) => {
         const user = await userService.getUserById(userId);
         //Lưu lại message
-        const room = await gameService.getRoomByRoomId(user.currentRoom);
+        const room = await roomService.getRoomByRoomId(user.currentRoom);
         room.chat.push({ user: user._id, content: message });
         await room.save();
         //Gửi mesage đến tất cả user trong phòng
@@ -124,7 +114,7 @@ mongoose
           text: `${user.name} đã rời phòng.`,
         });
         // Emit lại thông tin phòng
-        const room = await gameService.getRoomByRoomId(user.currentRoom);
+        const room = await roomService.getRoomByRoomId(user.currentRoom);
         io.to(user.currentRoom).emit('roomData', {
           room: room,
         });

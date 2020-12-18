@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-const gameSchema = mongoose.Schema(
+const roomSchema = mongoose.Schema(
   {
     roomId: {
       type: String,
@@ -48,11 +48,11 @@ const gameSchema = mongoose.Schema(
     chat: [
       { user: { type: Schema.Types.ObjectId, ref: 'User' }, content: String },
     ],
-    history: [{ x: Number, y: Number }],
+    
   },
   { timestamps: true }
 );
 
-const Game = mongoose.model('Game', gameSchema);
+const Room = mongoose.model('Room', roomSchema);
 
-module.exports = Game;
+module.exports = Room;

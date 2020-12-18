@@ -1,12 +1,12 @@
 const cryptoRandomString = require('crypto-random-string');
 const httpStatus = require('http-status');
 
-const { Game } = require('../models');
+const { Room } = require('../models');
 const { populate } = require('../models/user.model');
 const ApiError = require('../utils/ApiError');
 
 const getAllRoom = () => {
-  return Game.find(
+  return Room.find(
     {},
     {
       _id: 1,
@@ -24,7 +24,7 @@ const getAllRoom = () => {
 
 
 const getRoomByRoomId = async (roomId) => {
-  const room = await Game.findOne({ roomId }).populate('chat.user');
+  const room = await Room.findOne({ roomId }).populate('chat.user');
   if (!room) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Room not found');
   }
@@ -34,7 +34,7 @@ const getRoomByRoomId = async (roomId) => {
 const createRoom = (name, userId, rule) => {
   // Create random roomId
   const roomId = cryptoRandomString({ length: 6, type: 'hex' });
-  const room = new Game({
+  const room = new Room({
     roomId,
     name,
     owner: userId,

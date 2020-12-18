@@ -1,7 +1,9 @@
 const User = require('./user.model');
-const Game = require('./game.model')
+const Room = require('./room.model');
+const Match = require('./match.model');
 
 module.exports = {
   User,
-  Game
+  Room,
+  Match,
 };
