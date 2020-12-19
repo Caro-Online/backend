@@ -76,7 +76,6 @@ const login = catchAsync(async (req, res) => {
 
 const loginFacebook = catchAsync(async (req, res) => {
   const { userId, accessToken } = req.body;
-  console.log(userId, accessToken);
   const { name, email } = await authUserService.verifyAccessTokenFromFacebook(
     userId,
     accessToken

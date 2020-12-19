@@ -33,7 +33,6 @@ const verifyAccessTokenFromFacebook = async (userId, accessToken) => {
 };
 
 const verifyIdTokenFromGoogle = async (idToken) => {
-  console.log(idToken);
   const response = await client.verifyIdToken({
     idToken,
     audience:
