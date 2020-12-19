@@ -114,7 +114,7 @@ mongoose
       socket.on('disconnect', async (reason) => {
         console.log('Disconnect ' + socket.id);
         console.log(reason);
-        const user = await User.findById(userId);
+        let user = await userService.getUserById(userId);
 
         //Nếu user có ở trong 1 phòng
         if (user.currentRoom) {
@@ -132,8 +132,9 @@ mongoose
         }
         // Đổi isOnline của user thành false
         user.isOnline = false;
-        await user.save();
+        user = await user.save();
         // Emit user-offline
+        console.log(user);
         socketService.emitUserOffline(userId);
       });
     });
