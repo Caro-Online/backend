@@ -22,7 +22,6 @@ const getAllRoom = () => {
   );
 };
 
-
 const getRoomByRoomId = async (roomId) => {
   const room = await Room.findOne({ roomId })
     .populate('chat.user')
@@ -36,12 +35,14 @@ const getRoomByRoomId = async (roomId) => {
   return room;
 };
 
-const createRoom = (name, userId, rule) => {
+const createRoom = (name, userId, rule, roomPassword) => {
   // Create random roomId
   const roomId = cryptoRandomString({ length: 6, type: 'hex' });
+  console.log(roomPassword);
   const room = new Room({
     roomId,
     name,
+    password: roomPassword,
     owner: userId,
     user: {
       u1: {
