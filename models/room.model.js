@@ -13,6 +13,7 @@ const roomSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    password: String,
     owner: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -48,7 +49,6 @@ const roomSchema = mongoose.Schema(
     chat: [
       { user: { type: Schema.Types.ObjectId, ref: 'User' }, content: String },
     ],
-    
   },
   { timestamps: true }
 );
