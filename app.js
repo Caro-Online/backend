@@ -87,6 +87,13 @@ mongoose
         callback();
       });
 
+      socket.on('user-online', async ({ userId }, callback) => {
+        const user = await userService.getUserById(userId);
+        user.isOnline = true;
+        await user.save();
+        socketService.emitUserOnline(userId);
+      });
+
       //Khi người dùng gửi message
       socket.on('sendMessage', async ({ message, userId }, callback) => {
         const user = await userService.getUserById(userId);
@@ -108,21 +115,24 @@ mongoose
         console.log('Disconnect ' + socket.id);
         console.log(reason);
         const user = await User.findById(userId);
-        // Thông báo cho các user khác trong phòng rằng user này đã out khỏi phòng
-        io.to(user.currentRoom).emit('message', {
-          userName: 'admin',
-          text: `${user.name} đã rời phòng.`,
-        });
-        // Emit lại thông tin phòng
-        const room = await roomService.getRoomByRoomId(user.currentRoom);
-        io.to(user.currentRoom).emit('roomData', {
-          room: room,
-        });
-        // Đổi isOnline của user thành false và currentRoom thành null
+
+        //Nếu user có ở trong 1 phòng
+        if (user.currentRoom) {
+          // Thông báo cho các user khác trong phòng rằng user này đã out khỏi phòng
+          io.to(user.currentRoom).emit('message', {
+            userName: 'admin',
+            text: `${user.name} đã rời phòng.`,
+          });
+          // Emit lại thông tin phòng
+          const room = await roomService.getRoomByRoomId(user.currentRoom);
+          io.to(user.currentRoom).emit('roomData', {
+            room: room,
+          });
+          user.currentRoom = null;
+        }
+        // Đổi isOnline của user thành false
         user.isOnline = false;
-        user.currentRoom = null;
         await user.save();
-        //
         // Emit user-offline
         socketService.emitUserOffline(userId);
       });
