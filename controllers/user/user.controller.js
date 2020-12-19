@@ -16,7 +16,14 @@ const updateStatusToOnline = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).json({ success: true, user });
 });
 
+const getUserById = catchAsync(async (req, res) => {
+  const userId = req.params.userId;
+  const user = await userService.getUserById(userId);
+  res.status(httpStatus.OK).json({ success: true, user });
+
+})
 module.exports = {
   getAllUser,
   updateStatusToOnline,
+  getUserById
 };

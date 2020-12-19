@@ -18,4 +18,10 @@ router.put(
   userController.updateStatusToOnline
 );
 
+router.get(
+  '/:userId',
+  passport.authenticate('jwt', { session: false }),
+  userController.getUserById
+);
+
 module.exports = router;

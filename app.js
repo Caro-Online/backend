@@ -84,6 +84,12 @@ mongoose
         //   users: getUsersInRoom(user.room),
         // });
 
+
+        console.log("userId" + userId)
+        //emit người xem đến những người còn lại
+        socket.broadcast.to(user.currentRoom).emit('new-audience', {
+          userId
+        });
         callback();
       });
 
