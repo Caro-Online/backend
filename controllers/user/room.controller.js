@@ -20,8 +20,38 @@ const createRoom = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).json({ success: true, room });
 });
 
+
+const joinRoom = catchAsync(async (req, res) => {
+  const { userId } = req.body;
+  const { roomId } = req.params;
+  const room = await roomService.joinRoom(userId, roomId);
+  res.status(httpStatus.OK).json({ success: true, room })
+})
+const outRoom = catchAsync(async (req, res) => {
+  const { userId } = req.body;
+  const { roomId } = req.params;
+  const room = await roomService.outRoom(userId, roomId);
+  res.status(httpStatus.OK).json({ success: true, room })
+})
+
+const joinMatch = catchAsync(async (req, res) => {
+  const { userId } = req.body;
+  const { roomId } = req.params;
+  const room = await roomService.joinMatch(userId, roomId);
+  if (room) {
+    res.status(httpStatus.OK).json({ success: true, room })
+  } else {
+    res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Phòng đã đầy" })
+  }
+
+})
+
+
 module.exports = {
   getAllRoom,
   getRoom,
   createRoom,
+  joinRoom,
+  joinMatch,
+  outRoom
 };

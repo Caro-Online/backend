@@ -48,7 +48,7 @@ const roomSchema = mongoose.Schema(
     chat: [
       { user: { type: Schema.Types.ObjectId, ref: 'User' }, content: String },
     ],
-    
+
   },
   { timestamps: true }
 );

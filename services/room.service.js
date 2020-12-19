@@ -24,7 +24,12 @@ const getAllRoom = () => {
 
 
 const getRoomByRoomId = async (roomId) => {
-  const room = await Room.findOne({ roomId }).populate('chat.user');
+  const room = await Room.findOne({ roomId })
+    .populate('chat.user')
+    .populate('owner')
+    .populate('user.u1.userRef')
+    .populate('user.u2.userRef')
+    .populate('audience');
   if (!room) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Room not found');
   }
@@ -49,6 +54,33 @@ const createRoom = (name, userId, rule) => {
   return room.save();
 };
 
+
+
+const joinRoom = (userId, roomId) => {
+  const filter = { roomId: roomId };
+  const update = { $addToSet: { audience: userId } }
+  return Room.findOneAndUpdate(filter, update, { new: true })
+    .populate('audience');
+}
+
+const outRoom = (userId, roomId) => {
+  return Room.findOneAndUpdate({ roomId: roomId }, {
+    $pull: { audience: userId }
+  }, { new: true })
+}
+
+const joinMatch = (userId, roomId) => {
+  const filter = { roomId: roomId };
+  const update = {
+    $set: {
+      "user.u2.userRef": userId
+    }
+  }
+  return Room.findOneAndUpdate(filter, update, { new: true })
+}
+
+
+
 // const updateCurrentRoom = async (userId, roomId) => {
 //   const room = await getRoomByRoomId(roomId);
 //   room.
@@ -58,5 +90,8 @@ module.exports = {
   getAllRoom,
   getRoomByRoomId,
   createRoom,
+  joinRoom,
+  joinMatch,
+  outRoom
   // updateCurrentRoom,
 };

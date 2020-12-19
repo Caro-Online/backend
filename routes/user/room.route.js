@@ -34,4 +34,29 @@ router.post(
   passport.authenticate('jwt', { session: false }),
   roomController.createRoom
 );
+
+//Tham gia phòng chơi với vai trò ng xem
+router.put(
+  '/:roomId/join',
+  passport.authenticate('jwt', { session: false }),
+  roomController.joinRoom
+)
+
+//Tham gia phòng chơi với vai trò ng chơi
+router.put(
+  '/:roomId/join-match',
+  passport.authenticate('jwt', { session: false }),
+  roomController.joinMatch
+)
+
+//TThoát phòng chơi
+router.put(
+  '/:roomId/out',
+  passport.authenticate('jwt', { session: false }),
+  roomController.outRoom
+)
+
+
+
+
 module.exports = router;
