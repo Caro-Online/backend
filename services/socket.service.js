@@ -29,7 +29,7 @@ const listenToConnectionEvent = (io) => {
     listenToSendMessageEvent(io, socket);
 
     //Lắng nghe sự kiện disconnect (Có thể tắt browser hoặc đăng xuất)
-    listenToDisconnectEvent(socket, userId);
+    listenToDisconnectEvent(io, socket, userId);
   });
 };
 
@@ -103,7 +103,7 @@ const listenToSendMessageEvent = (io, socket) => {
   });
 };
 
-const listenToDisconnectEvent = (socket, userId) => {
+const listenToDisconnectEvent = (io, socket, userId) => {
   socket.on('disconnect', async (reason) => {
     console.log('Disconnect ' + socket.id);
     console.log(reason);
