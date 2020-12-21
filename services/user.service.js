@@ -59,6 +59,10 @@ const getAllUser = () => {
   return User.find();
 };
 
+const getRanking = () => {
+  return User.find({}).sort({cup:-1});
+};
+
 const getUserWithResetToken = (resetToken) => {
   return User.findOne({
     resetToken,
@@ -91,6 +95,7 @@ module.exports = {
   getUserByEmail,
   getAdminByEmail,
   getUserById,
+  getRanking,
   processUserLoginFacebookGoogle,
   getAllUser,
   getUserWithResetToken,

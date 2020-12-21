@@ -76,7 +76,7 @@ const listenToJoinEvent = (socket) => {
       socket.broadcast.to(user.currentRoom).emit('audience-out-update', {
         userId,
       });
-      callback();
+      // callback();
     })
     callback();
   });
