@@ -72,11 +72,14 @@ const listenToJoinEvent = (socket) => {
     socket.broadcast.to(user.currentRoom).emit('new-audience', {
       userId,
     });
-    socket.on('audience-out', ({ userId }, callback) => {
+    socket.on('audience-out', ({ userId }) => {
       socket.broadcast.to(user.currentRoom).emit('audience-out-update', {
         userId,
       });
-      callback();
+    })
+    socket.on('join-match', ({ userId }) => {
+      socket.broadcast.to(user.currentRoom).emit('join-match-update', { userId })
+      socket.broadcast.to(user.currentRoom).emit('audience-out-update', { userId })
     })
     callback();
   });
