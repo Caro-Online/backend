@@ -81,10 +81,13 @@ const listenToJoinEvent = (socket) => {
       socket.broadcast.to(user.currentRoom).emit('join-match-update', { userId })
       socket.broadcast.to(user.currentRoom).emit('audience-out-update', { userId })
     })
+    socket.on('send-move', ({ move, roomId }) => {
+      console.log(move + " " + roomId)
+      socket.broadcast.to(roomId).emit('receive-move', { move })
+    })
     callback();
   });
 };
-
 const listenToUserOfflineEvent = (socket) => {
   socket.on('user-online', async ({ userId }, callback) => {
     const user = await userService.getUserById(userId);
