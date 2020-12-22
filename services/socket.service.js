@@ -76,15 +76,19 @@ const listenToJoinEvent = (socket) => {
       socket.broadcast.to(user.currentRoom).emit('audience-out-update', {
         userId,
       });
-    })
+    });
     socket.on('join-match', ({ userId }) => {
-      socket.broadcast.to(user.currentRoom).emit('join-match-update', { userId })
-      socket.broadcast.to(user.currentRoom).emit('audience-out-update', { userId })
-    })
+      socket.broadcast
+        .to(user.currentRoom)
+        .emit('join-match-update', { userId });
+      socket.broadcast
+        .to(user.currentRoom)
+        .emit('audience-out-update', { userId });
+    });
     socket.on('send-move', ({ move, roomId }) => {
-      console.log(move + " " + roomId)
-      socket.broadcast.to(roomId).emit('receive-move', { move })
-    })
+      console.log(move + ' ' + roomId);
+      socket.broadcast.to(roomId).emit('receive-move', { move });
+    });
     callback();
   });
 };
@@ -139,7 +143,6 @@ const listenToDisconnectEvent = (io, socket, userId) => {
     user.isOnline = false;
     user = await user.save();
     // Emit user-offline
-    console.log(user);
     emitUserOffline(userId);
   });
 };
