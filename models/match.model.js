@@ -25,6 +25,12 @@ const matchSchema = mongoose.Schema(
     winner: { type: Schema.Types.ObjectId, ref: 'User' },
     // Lịch sử ván đấu
     history: [{ x: Number, y: Number }],
+    // Phòng
+    room: { type: Schema.Types.ObjectId, ref: 'Room' },
+    // Nội dung chat của trận đấu
+    chat: [
+      { user: { type: Schema.Types.ObjectId, ref: 'User' }, content: String },
+    ],
   },
   { timestamps: true }
 );

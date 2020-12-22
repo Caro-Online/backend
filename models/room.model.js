@@ -18,19 +18,6 @@ const roomSchema = mongoose.Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
     },
-    user: {
-      // Người chơi
-      u1: {
-        userRef: { type: Schema.Types.ObjectId, ref: 'User' },
-        countDownTime: Number,
-      },
-      u2: {
-        userRef: { type: Schema.Types.ObjectId, ref: 'User' },
-        countDownTime: Number,
-      },
-      // u1: { id: Schema.Types.ObjectId, score: Number, countDowntTime: Date }, //Score: Điểm thắng của ván đấu
-      // u2: { id: Schema.Types.ObjectId, score: Number, countDowntTime: Date }, //countDownTime: Thời gian chơi còn lại
-    },
     audience: [{ type: Schema.Types.ObjectId, ref: 'User' }], // Người xem
     status: {
       // Trạng thái của phòng chơi (Đang chơi, Đang chờ(Có người trong phòng nhưng chua chơi), Trống)
@@ -49,7 +36,6 @@ const roomSchema = mongoose.Schema(
     chat: [
       { user: { type: Schema.Types.ObjectId, ref: 'User' }, content: String },
     ],
-
   },
   { timestamps: true }
 );
