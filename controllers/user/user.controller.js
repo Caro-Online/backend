@@ -9,7 +9,6 @@ const getAllUser = catchAsync(async (req, res) => {
 });
 
 const getRanking = catchAsync(async (req, res) => {
-  console.log('In here');
   const users = await userService.getRanking();
   res.status(httpStatus.OK).json({ success: true, users });
 });

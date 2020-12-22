@@ -33,6 +33,7 @@ const roomSchema = mongoose.Schema(
       default: 'BLOCK_TWO_SIDE',
       enum: ['NOT_BLOCK_TWO_SIDE', 'BLOCK_TWO_SIDE'],
     },
+    matches:[{ type: Schema.Types.ObjectId, ref: 'Match' }],
     chat: [
       { user: { type: Schema.Types.ObjectId, ref: 'User' }, content: String },
     ],
