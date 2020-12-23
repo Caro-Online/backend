@@ -5,8 +5,8 @@ const { Room } = require('../models');
 const { populate } = require('../models/user.model');
 const ApiError = require('../utils/ApiError');
 
-const getAllRoom = () => {
-  return Room.find(
+const getAllRoom = async () => {
+  const rooms = await Room.find(
     {},
     {
       _id: 1,
@@ -21,6 +21,10 @@ const getAllRoom = () => {
       password: 1,
     }
   );
+  if (!rooms || rooms.length === 0) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Không thể tìm thấy phòng nào!');
+  }
+  return rooms;
 };
 
 const getRoomByRoomId = async (roomId) => {
@@ -31,7 +35,10 @@ const getRoomByRoomId = async (roomId) => {
     .populate('user.u2.userRef')
     .populate('audience');
   if (!room) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Room not found');
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      'Không thể tìm thấy phòng tương ứng!'
+    );
   }
   return room;
 };
@@ -39,17 +46,13 @@ const getRoomByRoomId = async (roomId) => {
 const createRoom = (name, userId, rule, roomPassword) => {
   // Create random roomId
   const roomId = cryptoRandomString({ length: 6, type: 'hex' });
-  console.log(roomPassword);
+  let users = [];
+  users.push(userId);
   const room = new Room({
     roomId,
     name,
     password: roomPassword,
-    owner: userId,
-    user: {
-      u1: {
-        userRef: userId,
-      },
-    },
+    users,
     status: 'WAITING',
     rule,
   });

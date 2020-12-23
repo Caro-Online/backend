@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 
 const userService = require('./user.service');
 const ApiError = require('../utils/ApiError');
+const catchAsync = require('../utils/catchAsync');
 
 const client = new OAuth2Client(
   '990188398227-bb3t5mt068kdj4350d3mvmqhcqeftkl8.apps.googleusercontent.com'
@@ -25,11 +26,15 @@ const loginUserWithEmailAndPassword = async (email, password) => {
 
 const verifyAccessTokenFromFacebook = async (userId, accessToken) => {
   let urlGraphFacebook = `https://graph.facebook.com/${userId}?fields=id,name,email&access_token=${accessToken}`;
-  const res = await fetch(urlGraphFacebook, {
-    method: 'GET',
-  });
-  const response = await res.json();
-  return response;
+  try {
+    const res = await fetch(urlGraphFacebook, {
+      method: 'GET',
+    });
+    const response = await res.json();
+    return response;
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Đã có lỗi xảy ra!');
+  }
 };
 
 const verifyIdTokenFromGoogle = async (idToken) => {

@@ -31,7 +31,10 @@ const updateUserPassword = async (user, password) => {
 };
 
 const processUserLoginFacebookGoogle = async (name, email) => {
-  let user = await getUserByEmail(email);
+  let user = await User.findOne(
+    { email: email, isAdmin: false },
+    { _v: -1, password: -1 }
+  );
   if (!user) {
     user = await createUser({
       name,
@@ -43,51 +46,119 @@ const processUserLoginFacebookGoogle = async (name, email) => {
   return { user, token };
 };
 
-const getUserByEmail = (email) => {
-  return User.findOne({ email: email, role: 'User' });
+const getUserByEmail = async (email) => {
+  const user = await User.findOne(
+    { email: email, isAdmin: false },
+    { _v: -1, password: -1 }
+  );
+  if (!user) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      'Không thể tìm thấy user tương ứng!'
+    );
+  }
+  return user;
 };
 
 const getAdminByEmail = (email) => {
   return User.findOne({ email: email, role: 'Admin' });
 };
 
-const getUserById = (id) => {
-  return User.findById(id);
+const getUserById = async (id) => {
+  const user = await User.findById(id, { __v: -1, password: -1 });
+  if (!user) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      'Không thể tìm thấy user tương ứng!'
+    );
+  }
+  return user;
 };
 
-const getAllUser = () => {
-  return User.find();
+const getAllUser = async () => {
+  const users = await User.find({}, { __v: -1, password: -1 });
+  if (!users || users.length === 0) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Không thể tìm thấy user nào!');
+  }
+  return users;
 };
 
-const getRanking = () => {
-  return User.find({}).sort({cup:-1});
-};
-
-const getUserWithResetToken = (resetToken) => {
-  return User.findOne({
-    resetToken,
-    resetTokenExpiration: { $gt: Date.now() },
+const getRanking = async () => {
+  const users = await User.find({}, { __v: -1, password: -1 }).sort({
+    cup: -1,
   });
+  if (!users || users.length === 0) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Không thể tìm thấy user nào!');
+  }
+  return users;
 };
 
-const getUserWithEmailVerifyToken = (emailVerifyToken) => {
-  return User.findOne({
+const getUserWithResetToken = async (resetToken) => {
+  const user = await User.findOne(
+    {
+      resetToken,
+      resetTokenExpiration: { $gt: Date.now() },
+    },
+    { __v: -1, password: -1 }
+  );
+  if (!user) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      'Không thể tìm thấy user tương ứng!'
+    );
+  }
+  return user;
+};
+
+const processConfirmRegistration = async (emailVerifyToken) => {
+  const user = await User.findOne({
     emailVerifyToken,
   });
+  if (!user) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      'Không thể tìm thấy user tương ứng!'
+    );
+  }
+  user.emailVerifyToken = undefined;
+  user.isEmailVerified = true;
+  user.save();
+  return user;
 };
 
-const getUserWithResetTokenAndUserId = (resetToken, userId) => {
-  return User.findOne({
-    resetToken,
-    resetTokenExpiration: { $gt: Date.now() },
-    _id: userId,
-  });
+const getUserWithResetTokenAndUserId = async (resetToken, userId) => {
+  const user = await User.findOne(
+    {
+      resetToken,
+      resetTokenExpiration: { $gt: Date.now() },
+      _id: userId,
+    },
+    { __v: -1, password: -1 }
+  );
+  if (!user) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      'Không thể tìm thấy user tương ứng hoặc resetToken đã hết hạn!'
+    );
+  }
+  return user;
 };
 
 const updateCurrentRoom = async (userId, roomId) => {
   const user = await getUserById(userId);
   user.currentRoom = roomId;
   return await user.save();
+};
+
+const updateStatusToOnline = (user) => {
+  user.status = 'ONLINE';
+  return user.save();
+};
+
+const initResetToken = (user) => {
+  user.resetToken = resetToken;
+  user.resetTokenExpiration = Date.now() + 36000000; // Sau 1h không đổi mật khẩu sẽ timeout
+  return user.save();
 };
 
 module.exports = {
@@ -100,7 +171,9 @@ module.exports = {
   getAllUser,
   getUserWithResetToken,
   getUserWithResetTokenAndUserId,
-  getUserWithEmailVerifyToken,
+  processConfirmRegistration,
   updateCurrentRoom,
   updateUserPassword,
+  updateStatusToOnline,
+  initResetToken,
 };

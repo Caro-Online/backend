@@ -16,8 +16,7 @@ const getRanking = catchAsync(async (req, res) => {
 const updateStatusToOnline = catchAsync(async (req, res) => {
   const userId = req.params.userId;
   const user = await userService.getUserById(userId);
-  user.isOnline = true;
-  await user.save();
+  user = await userService.updateStatusToOnline(user);
   res.status(httpStatus.OK).json({ success: true, user });
 });
 
