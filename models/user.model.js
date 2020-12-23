@@ -74,9 +74,9 @@ const userSchema = mongoose.Schema(
       trim: true,
     },
     // Token reset mật khẩu
-    resetToken: String,
+    resetPasswordToken: String,
     // Thời gian token reset mật khẩu hết tác dụng
-    resetTokenExpiration: Number,
+    resetPasswordTokenExpiration: Number,
     // Số trận đã chơi
     matchHavePlayed: {
       type: Number,
