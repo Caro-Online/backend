@@ -50,17 +50,23 @@ const userSchema = mongoose.Schema(
       default: null,
     },
     // Chức vụ(User hoặc Admin)
-    role: {
-      type: String,
-      required: true,
-      default: 'User',
-      enum: ['User', 'Admin'],
-    },
-    // Trường cho biết user có đang online hay không
-    isOnline: {
+    isAdmin: {
       type: Boolean,
       required: true,
       default: false,
+    },
+    // User có bị block hay không
+    isBlock: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    // Trường cho biết user đang online, offline hoặc playing
+    status: {
+      type: String,
+      required: true,
+      default: 'OFFLINE',
+      enum: ['ONLINE', 'OFFLINE', 'PLAYING'],
     },
     // Hình đại diện
     imageUrl: {
