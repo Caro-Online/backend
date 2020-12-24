@@ -17,6 +17,8 @@ const roomSchema = mongoose.Schema(
     },
     // Mật khẩu phòng
     password: String,
+    // Chủ cmn phòng
+    owner: { type: Schema.Types.ObjectId, ref: 'User' },
     // Những người đang trong bàn chơi (index 0 là owner, index 1 là người chơi thứ 2, về sau là audiences)
     users: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     // // Người xem
