@@ -30,16 +30,17 @@ const updateUserPassword = async (user, password) => {
   return await user.save();
 };
 
-const processUserLoginFacebookGoogle = async (name, email) => {
+const processUserLoginFacebookGoogle = async (name, email, imageUrl) => {
   let user = await User.findOne(
     { email: email, isAdmin: false },
-    { _v: -1, password: -1 }
+    { __v: 0, password: 0 }
   );
   if (!user) {
     user = await createUser({
       name,
       email,
       password: cryptoRandomString({ length: 10, type: 'base64' }),
+      imageUrl,
     });
   }
   const token = await tokenService.generateAuthToken(user);
@@ -47,10 +48,7 @@ const processUserLoginFacebookGoogle = async (name, email) => {
 };
 
 const getUserByEmail = async (email) => {
-  const user = await User.findOne(
-    { email: email, isAdmin: false },
-    { _v: -1, password: -1 }
-  );
+  const user = await User.findOne({ email: email, isAdmin: false }, { __v: 0 });
   if (!user) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
@@ -65,7 +63,7 @@ const getAdminByEmail = (email) => {
 };
 
 const getUserById = async (id) => {
-  const user = await User.findById(id, { __v: -1, password: -1 });
+  const user = await User.findById(id, { __v: 0, password: 0 });
   if (!user) {
     throw new ApiError(
       httpStatus.NOT_FOUND,

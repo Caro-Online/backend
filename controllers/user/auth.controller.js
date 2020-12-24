@@ -1,6 +1,6 @@
 const httpStatus = require('http-status');
-const { default: fetch } = require('node-fetch');
 const { v4: uuidv4 } = require('uuid');
+const fetch = require('node-fetch');
 
 const catchAsync = require('../../utils/catchAsync');
 const {
@@ -10,8 +10,6 @@ const {
   socketService,
   mailService,
 } = require('../../services');
-const { transporter } = require('../../config/nodemailer.config');
-const { sendVerifyEmail } = require('../../services/mail.service');
 
 const register = catchAsync(async (req, res) => {
   // Tạo email verify token
@@ -35,54 +33,76 @@ const login = catchAsync(async (req, res) => {
     email,
     password
   );
-  const token = await tokenService.generateAuthToken(user);
+  const token = tokenService.generateAuthToken(user);
   socketService.emitUserOnline(user._id);
   user = await userService.updateStatusToOnline(user);
   res.status(httpStatus.OK).json({
     success: true,
     token: token,
-    user,
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      imageUrl: user.imageUrl,
+    },
   });
 });
 
 const loginFacebook = catchAsync(async (req, res) => {
   const { userId, accessToken } = req.body;
-  const { name, email } = await authUserService.verifyAccessTokenFromFacebook(
-    userId,
-    accessToken
-  );
+  const {
+    name,
+    email,
+    picture,
+  } = await authUserService.verifyAccessTokenFromFacebook(userId, accessToken);
+  let urlGetPicture = `https://graph.facebook.com/${userId}/picture`;
+  const response = await fetch(urlGetPicture, {
+    method: 'GET',
+  });
   let { user, token } = await userService.processUserLoginFacebookGoogle(
     name,
-    email
+    email,
+    response.url
   );
   socketService.emitUserOnline(user._id);
   user = await userService.updateStatusToOnline(user);
   res.status(httpStatus.OK).json({
     success: true,
     token,
-    user,
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      imageUrl: user.imageUrl,
+    },
   });
 });
 
 const loginGoogle = catchAsync(async (req, res) => {
   const { idToken } = req.body;
-  console.log(req.body);
   const {
     email_verified,
     name,
     email,
+    picture,
   } = await authUserService.verifyIdTokenFromGoogle(idToken);
   if (email_verified) {
     let { user, token } = await userService.processUserLoginFacebookGoogle(
       name,
-      email
+      email,
+      picture
     );
     socketService.emitUserOnline(user._id);
     user = await userService.updateStatusToOnline(user);
     res.status(httpStatus.OK).json({
       success: true,
       token,
-      user,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        imageUrl: user.imageUrl,
+      },
     });
   }
 });

@@ -102,7 +102,7 @@ userSchema.statics.isEmailTaken = async function (email) {
 };
 
 userSchema.methods.isPasswordMatch = async function (password) {
-  return bcrypt.compare(password, this.password);
+  return await bcrypt.compare(password, this.password);
 };
 
 const User = mongoose.model('User', userSchema);

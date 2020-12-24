@@ -10,14 +10,8 @@ const matchSchema = mongoose.Schema(
     users: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     // Lịch sử ván đấu
     history: [{ x: Number, y: Number }],
-    // Nội dung chat của trận đấu
-    chat: [
-      { user: { type: Schema.Types.ObjectId, ref: 'User' }, content: String },
-    ],
     // Người chiến thắng
     winner: { type: Schema.Types.ObjectId, ref: 'User' },
-
-    
   },
   { timestamps: true }
 );
