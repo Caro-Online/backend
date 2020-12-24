@@ -6,21 +6,7 @@ const { populate } = require('../models/user.model');
 const ApiError = require('../utils/ApiError');
 
 const getAllRoom = async () => {
-  const rooms = await Room.find(
-    {},
-    {
-      _id: 1,
-      roomId: 1,
-      name: 1,
-      user: 1,
-      status: 1,
-      rule: 1,
-      audience: 1,
-      status: 1,
-      owner: 1,
-      password: 1,
-    }
-  );
+  const rooms = await Room.find({});
   if (!rooms || rooms.length === 0) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Không thể tìm thấy phòng nào!');
   }
@@ -30,10 +16,7 @@ const getAllRoom = async () => {
 const getRoomByRoomId = async (roomId) => {
   const room = await Room.findOne({ roomId })
     .populate('chat.user')
-    .populate('owner')
-    .populate('user.u1.userRef')
-    .populate('user.u2.userRef')
-    .populate('audience');
+    .populate('audiences');
   if (!room) {
     throw new ApiError(
       httpStatus.NOT_FOUND,

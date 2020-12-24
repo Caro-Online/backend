@@ -121,6 +121,7 @@ const listenToSendMessageEvent = (io, socket) => {
 
 const listenToDisconnectEvent = (io, socket, userId) => {
   socket.on('disconnect', async (reason) => {
+    console.log(userId);
     console.log('Disconnect ' + socket.id);
     console.log(reason);
     let user = await userService.getUserById(userId);
