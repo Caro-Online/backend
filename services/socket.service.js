@@ -1,6 +1,7 @@
 const socketIo = require('../utils/socketio');
 const roomService = require('../services/room.service');
 const userService = require('../services/user.service');
+const { Chat } = require('../models');
 
 const emitUserOnline = (userId) => {
   socketIo.getIO().emit('user-online', {
@@ -22,8 +23,8 @@ const listenToConnectionEvent = (io) => {
     //Lắng nghe sự kiện join room
     listenToJoinEvent(socket);
 
-    //Lắng nghe sự kiện 1 user nào đó offline
-    listenToUserOfflineEvent(socket);
+    //Lắng nghe sự kiện 1 user nào đó online
+    listenToUserOnlineEvent(socket);
 
     //Lắng nghe sự kiện người dùng gửi 1 tin nhắn đến phòng
     listenToSendMessageEvent(io, socket);
@@ -67,7 +68,6 @@ const listenToJoinEvent = (socket) => {
     //   users: getUsersInRoom(user.room),
     // });
 
-    console.log('userId' + userId);
     //emit người xem đến những người còn lại
     socket.broadcast.to(user.currentRoom).emit('new-audience', {
       userId,
@@ -92,10 +92,10 @@ const listenToJoinEvent = (socket) => {
     callback();
   });
 };
-const listenToUserOfflineEvent = (socket) => {
+const listenToUserOnlineEvent = (socket) => {
   socket.on('user-online', async ({ userId }, callback) => {
     const user = await userService.getUserById(userId);
-    user.isOnline = true;
+    user.status = 'ONLINE';
     await user.save();
     emitUserOnline(userId);
   });
@@ -106,13 +106,16 @@ const listenToSendMessageEvent = (io, socket) => {
     const user = await userService.getUserById(userId);
     //Lưu lại message
     const room = await roomService.getRoomByRoomId(user.currentRoom);
-    room.chat.push({ user: user._id, content: message });
+    let chat = new Chat({ user: user._id, content: message });
+    chat = await chat.save();
+    room.chat.push(chat);
     await room.save();
     //Gửi mesage đến tất cả user trong phòng
     io.to(user.currentRoom).emit('message', {
       userId: user._id,
       userName: user.name,
       text: message,
+      createdAt: chat.createdAt,
     });
 
     callback();
@@ -121,9 +124,7 @@ const listenToSendMessageEvent = (io, socket) => {
 
 const listenToDisconnectEvent = (io, socket, userId) => {
   socket.on('disconnect', async (reason) => {
-    console.log(userId);
     console.log('Disconnect ' + socket.id);
-    console.log(reason);
     let user = await userService.getUserById(userId);
 
     //Nếu user có ở trong 1 phòng
@@ -140,8 +141,8 @@ const listenToDisconnectEvent = (io, socket, userId) => {
       });
       user.currentRoom = null;
     }
-    // Đổi isOnline của user thành false
-    user.isOnline = false;
+    // Đổi status của user thành OFFLINE
+    user.status = 'OFFLINE';
     user = await user.save();
     // Emit user-offline
     emitUserOffline(userId);

@@ -74,7 +74,7 @@ const getUserById = async (id) => {
 };
 
 const getAllUser = async () => {
-  const users = await User.find({}, { __v: -1, password: -1 });
+  const users = await User.find({}, { __v: 0, password: 0 });
   if (!users || users.length === 0) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Không thể tìm thấy user nào!');
   }
@@ -82,7 +82,7 @@ const getAllUser = async () => {
 };
 
 const getRanking = async () => {
-  const users = await User.find({}, { __v: -1, password: -1 }).sort({
+  const users = await User.find({}, { __v: 0, password: 0 }).sort({
     cup: -1,
   });
   if (!users || users.length === 0) {
@@ -97,7 +97,7 @@ const getUserWithResetToken = async (resetToken) => {
       resetToken,
       resetTokenExpiration: { $gt: Date.now() },
     },
-    { __v: -1, password: -1 }
+    { __v: 0, password: 0 }
   );
   if (!user) {
     throw new ApiError(
@@ -131,7 +131,7 @@ const getUserWithResetTokenAndUserId = async (resetToken, userId) => {
       resetTokenExpiration: { $gt: Date.now() },
       _id: userId,
     },
-    { __v: -1, password: -1 }
+    { __v: 0, password: 0 }
   );
   if (!user) {
     throw new ApiError(
