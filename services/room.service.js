@@ -15,8 +15,9 @@ const getAllRoom = async () => {
 
 const getRoomByRoomId = async (roomId) => {
   const room = await Room.findOne({ roomId })
-    .populate('chat.user')
-    .populate('audiences');
+    .populate({ path: 'chat', populate: { path: 'user' } })
+    .populate('audiences')
+    .populate('owner');
   if (!room) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
@@ -36,6 +37,7 @@ const createRoom = (name, userId, rule, roomPassword) => {
     name,
     password: roomPassword,
     users,
+    owner: userId,
     status: 'WAITING',
     rule,
   });
