@@ -46,7 +46,6 @@ const verifyIdTokenFromGoogle = async (idToken) => {
     audience:
       '990188398227-bb3t5mt068kdj4350d3mvmqhcqeftkl8.apps.googleusercontent.com',
   });
-  console.log(response.payload);
   return response.payload;
 };
 

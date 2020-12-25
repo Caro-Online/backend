@@ -51,7 +51,7 @@ const listenToJoinEvent = (socket) => {
 
     //Lấy thông tin về phòng
     const room = await roomService.getRoomByRoomId(roomId);
-
+    console.log(socket.id + ' Emit message');
     //Message tới user đó
     socket.emit('message', {
       userName: 'admin',
@@ -127,8 +127,11 @@ const listenToDisconnectEvent = (io, socket, userId) => {
     console.log('Disconnect ' + socket.id);
     let user = await userService.getUserById(userId);
 
+    //
+
     //Nếu user có ở trong 1 phòng
     if (user.currentRoom) {
+      socket.leave(user.currentRoom);
       // Thông báo cho các user khác trong phòng rằng user này đã out khỏi phòng
       io.to(user.currentRoom).emit('message', {
         userName: 'admin',
