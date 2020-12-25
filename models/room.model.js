@@ -17,12 +17,13 @@ const roomSchema = mongoose.Schema(
     },
     // Mật khẩu phòng
     password: String,
-    // Chủ cmn phòng
-    owner: { type: Schema.Types.ObjectId, ref: 'User' },
-    // Những người đang trong bàn chơi (index 0 là owner, index 1 là người chơi thứ 2, về sau là audiences)
-    users: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    // 2 người chơi trong hàng đợi
+    players: [{
+      user: { type: Schema.Types.ObjectId, ref: 'User' },
+      isReady: { type: Boolean }
+    }],
     // // Người xem
-    // audiences: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    audiences: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     status: {
       // Trạng thái của phòng chơi (Đang chơi, Đang chờ(Có người trong phòng nhưng chua chơi), Trống)
       type: String,
