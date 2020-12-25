@@ -77,7 +77,7 @@ const listenToJoinEvent = (socket) => {
         userId,
       });
     });
-    socket.on('join-match', ({ userId }) => {
+    socket.on('join-player-queue', ({ userId }) => {
       socket.broadcast
         .to(user.currentRoom)
         .emit('join-match-update', { userId });

@@ -17,7 +17,7 @@ const getRoomByRoomId = async (roomId) => {
   const room = await Room.findOne({ roomId })
     .populate({ path: 'chat', populate: { path: 'user' } })
     .populate('audiences')
-    .populate('owner');
+    .populate('players.user')
   if (!room) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
@@ -36,8 +36,10 @@ const createRoom = (name, userId, rule, roomPassword) => {
     roomId,
     name,
     password: roomPassword,
-    users,
-    owner: userId,
+    players: [{
+      user: userId,
+      isReady: true
+    }],
     status: 'WAITING',
     rule,
   });
@@ -46,7 +48,7 @@ const createRoom = (name, userId, rule, roomPassword) => {
 
 const joinRoom = (userId, roomId) => {
   const filter = { roomId: roomId };
-  const update = { $addToSet: { audience: userId } };
+  const update = { $addToSet: { audiences: userId } };
   return Room.findOneAndUpdate(filter, update, { new: true }).populate(
     'audiences'
   );
@@ -56,21 +58,25 @@ const outRoom = (userId, roomId) => {
   return Room.findOneAndUpdate(
     { roomId: roomId },
     {
-      $pull: { audience: userId },
+      $pull: { audiences: userId },
     },
     { new: true }
   );
 };
 
-// const joinMatch = (userId, roomId) => {
-//   const filter = { roomId: roomId };
-//   const update = {
-//     $set: {
-//       'user.u2.userRef': userId,
-//     },
-//   };
-//   return Room.findOneAndUpdate(filter, update, { new: true });
-// };
+const joinPlayerQueue = (userId, roomId) => {
+  const filter = { roomId: roomId };
+  const update = {
+    $addToSet: {
+      players: { user: userId, isReady: true }
+    },
+  };
+  return Room.findOneAndUpdate(filter, update,
+    { new: true }, (eror, room) => {
+      console.log(room.players)
+    });
+
+};
 
 // const updateCurrentRoom = async (userId, roomId) => {
 //   const room = await getRoomByRoomId(roomId);
@@ -82,7 +88,7 @@ module.exports = {
   getRoomByRoomId,
   createRoom,
   joinRoom,
-  //joinMatch,
+  joinPlayerQueue,
   outRoom,
   // updateCurrentRoom,
 };

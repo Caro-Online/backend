@@ -34,10 +34,10 @@ const outRoom = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).json({ success: true, room })
 })
 
-const joinMatch = catchAsync(async (req, res) => {
+const joinPlayerQueue = catchAsync(async (req, res) => {
   const { userId } = req.body;
   const { roomId } = req.params;
-  const room = await roomService.joinMatch(userId, roomId);
+  const room = await roomService.joinPlayerQueue(userId, roomId);
   if (room) {
     res.status(httpStatus.OK).json({ success: true, room })
   } else {
@@ -52,6 +52,6 @@ module.exports = {
   getRoom,
   createRoom,
   joinRoom,
-  joinMatch,
+  joinPlayerQueue,
   outRoom
 };
