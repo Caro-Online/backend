@@ -17,7 +17,7 @@ const getRoomByRoomId = async (roomId) => {
   const room = await Room.findOne({ roomId })
     .populate({ path: 'chat', populate: { path: 'user' } })
     .populate('audiences')
-    .populate('owner');
+    .populate('players.user');
   if (!room) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
@@ -30,14 +30,17 @@ const getRoomByRoomId = async (roomId) => {
 const createRoom = (name, userId, rule, roomPassword) => {
   // Create random roomId
   const roomId = cryptoRandomString({ length: 6, type: 'hex' });
-  let users = [];
-  users.push(userId);
+  let players = [];
+  const player = {
+    user: userId,
+    isReady: false,
+  };
+  players.push(player);
   const room = new Room({
     roomId,
     name,
     password: roomPassword,
-    users,
-    owner: userId,
+    players,
     status: 'WAITING',
     rule,
   });

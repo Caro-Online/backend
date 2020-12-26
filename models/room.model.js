@@ -18,10 +18,12 @@ const roomSchema = mongoose.Schema(
     // Mật khẩu phòng
     password: String,
     // 2 người chơi trong hàng đợi
-    players: [{
-      user: { type: Schema.Types.ObjectId, ref: 'User' },
-      isReady: { type: Boolean }
-    }],
+    players: [
+      {
+        user: { type: Schema.Types.ObjectId, ref: 'User' },
+        isReady: { type: Boolean, default: false },
+      },
+    ],
     // // Người xem
     audiences: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     status: {
