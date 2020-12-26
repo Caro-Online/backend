@@ -30,17 +30,16 @@ const getRoomByRoomId = async (roomId) => {
 const createRoom = (name, userId, rule, roomPassword) => {
   // Create random roomId
   const roomId = cryptoRandomString({ length: 6, type: 'hex' });
-  let players = [];
-  const player = {
-    user: userId,
-    isReady: false,
-  };
-  players.push(player);
   const room = new Room({
     roomId,
     name,
     password: roomPassword,
-    players,
+    players: [
+      {
+        user: userId,
+        isReady: true,
+      },
+    ],
     status: 'WAITING',
     rule,
   });
@@ -49,7 +48,7 @@ const createRoom = (name, userId, rule, roomPassword) => {
 
 const joinRoom = (userId, roomId) => {
   const filter = { roomId: roomId };
-  const update = { $addToSet: { audience: userId } };
+  const update = { $addToSet: { audiences: userId } };
   return Room.findOneAndUpdate(filter, update, { new: true }).populate(
     'audiences'
   );
@@ -59,21 +58,23 @@ const outRoom = (userId, roomId) => {
   return Room.findOneAndUpdate(
     { roomId: roomId },
     {
-      $pull: { audience: userId },
+      $pull: { audiences: userId },
     },
     { new: true }
   );
 };
 
-// const joinMatch = (userId, roomId) => {
-//   const filter = { roomId: roomId };
-//   const update = {
-//     $set: {
-//       'user.u2.userRef': userId,
-//     },
-//   };
-//   return Room.findOneAndUpdate(filter, update, { new: true });
-// };
+const joinPlayerQueue = (userId, roomId) => {
+  const filter = { roomId: roomId };
+  const update = {
+    $addToSet: {
+      players: { user: userId, isReady: true },
+    },
+  };
+  return Room.findOneAndUpdate(filter, update, { new: true }, (eror, room) => {
+    console.log(room.players);
+  });
+};
 
 // const updateCurrentRoom = async (userId, roomId) => {
 //   const room = await getRoomByRoomId(roomId);
@@ -85,7 +86,7 @@ module.exports = {
   getRoomByRoomId,
   createRoom,
   joinRoom,
-  //joinMatch,
+  joinPlayerQueue,
   outRoom,
   // updateCurrentRoom,
 };

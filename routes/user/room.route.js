@@ -38,9 +38,9 @@ router.put(
 
 //Tham gia phòng chơi với vai trò ng chơi
 router.put(
-  '/:roomId/join-match',
+  '/:roomId/join-player-queue',
   passport.authenticate('jwt', { session: false }),
-  roomController.joinMatch
+  roomController.joinPlayerQueue
 )
 
 //TThoát phòng chơi
