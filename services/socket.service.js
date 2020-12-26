@@ -23,6 +23,9 @@ const listenToConnectionEvent = (io) => {
     //Lắng nghe sự kiện join room
     listenToJoinEvent(socket);
 
+    //Lắng nghe sự kiện leave room
+    listenToLeaveRoomEvent(io, socket);
+
     //Lắng nghe sự kiện 1 user nào đó online
     listenToUserOnlineEvent(socket);
 
@@ -149,6 +152,25 @@ const listenToDisconnectEvent = (io, socket, userId) => {
     user = await user.save();
     // Emit user-offline
     emitUserOffline(userId);
+  });
+};
+
+const listenToLeaveRoomEvent = (io, socket) => {
+  socket.on('leave-room', async ({ userId }) => {
+    const user = await userService.getUserById(userId);
+    socket.leave(user.currentRoom);
+    // Thông báo cho các user khác trong phòng rằng user này đã out khỏi phòng
+    io.to(user.currentRoom).emit('message', {
+      userName: 'admin',
+      text: `${user.name} đã rời phòng.`,
+    });
+    // Emit lại thông tin phòng
+    const room = await roomService.getRoomByRoomId(user.currentRoom);
+    io.to(user.currentRoom).emit('roomData', {
+      room: room,
+    });
+    user.currentRoom = null;
+    await user.save();
   });
 };
 

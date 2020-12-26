@@ -17,7 +17,7 @@ const getRoomByRoomId = async (roomId) => {
   const room = await Room.findOne({ roomId })
     .populate({ path: 'chat', populate: { path: 'user' } })
     .populate('audiences')
-    .populate('players.user')
+    .populate('players.user');
   if (!room) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
@@ -30,16 +30,16 @@ const getRoomByRoomId = async (roomId) => {
 const createRoom = (name, userId, rule, roomPassword) => {
   // Create random roomId
   const roomId = cryptoRandomString({ length: 6, type: 'hex' });
-  let users = [];
-  users.push(userId);
   const room = new Room({
     roomId,
     name,
     password: roomPassword,
-    players: [{
-      user: userId,
-      isReady: true
-    }],
+    players: [
+      {
+        user: userId,
+        isReady: true,
+      },
+    ],
     status: 'WAITING',
     rule,
   });
@@ -68,14 +68,12 @@ const joinPlayerQueue = (userId, roomId) => {
   const filter = { roomId: roomId };
   const update = {
     $addToSet: {
-      players: { user: userId, isReady: true }
+      players: { user: userId, isReady: true },
     },
   };
-  return Room.findOneAndUpdate(filter, update,
-    { new: true }, (eror, room) => {
-      console.log(room.players)
-    });
-
+  return Room.findOneAndUpdate(filter, update, { new: true }, (eror, room) => {
+    console.log(room.players);
+  });
 };
 
 // const updateCurrentRoom = async (userId, roomId) => {
