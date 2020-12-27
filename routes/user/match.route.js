@@ -12,5 +12,16 @@ router.post(
     passport.authenticate('jwt', { session: false }),
     matchController.createMatch
 );
+//Lấy trận hiện tại của id của phòng
+router.get(
+    '/room/:roomId',
+    passport.authenticate('jwt', { session: false }),
+    matchController.getCurrentMatchByIdOfRoom
+);
+router.post(
+    '/addmove',
+    passport.authenticate('jwt', { session: false }),
+    matchController.addMove
+);
 
 module.exports = router;
