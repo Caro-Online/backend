@@ -1,10 +1,15 @@
-const httpStatus = require('http-status');
+const httpStatus = require("http-status");
 
-const catchAsync = require('../../utils/catchAsync');
-const { userService } = require('../../services');
+const catchAsync = require("../../utils/catchAsync");
+const { userService } = require("../../services");
 
 const getAllUser = catchAsync(async (req, res) => {
   const users = await userService.getAllUser();
+  res.status(httpStatus.OK).json({ success: true, users });
+});
+
+const getSearch = catchAsync(async (req, res) => {
+  const users = await userService.search(req);
   res.status(httpStatus.OK).json({ success: true, users });
 });
 
@@ -31,4 +36,5 @@ module.exports = {
   getRanking,
   updateStatusToOnline,
   getUserById,
+  getSearch,
 };
