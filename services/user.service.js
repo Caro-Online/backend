@@ -103,7 +103,6 @@ const getAllUser = async (req) => {
       ],
     };
   }
-
   const users = await User.find(filters, { __v: 0, password: 0 });
   return users;
 };
