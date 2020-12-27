@@ -54,7 +54,7 @@ const listenToJoinEvent = (socket) => {
 
     //Lấy thông tin về phòng
     const room = await roomService.getRoomByRoomId(roomId);
-    console.log(socket.id + ' Emit message');
+
     //Message tới user đó
     socket.emit('message', {
       userName: 'admin',
@@ -65,21 +65,15 @@ const listenToJoinEvent = (socket) => {
       userName: 'admin',
       text: `${user.name} đã tham gia phòng!`,
     });
-    //Truyền roomData xuống client
-    // io.to(user.room).emit('roomData', {
-    //   room: user.room,
-    //   users: getUsersInRoom(user.room),
-    // });
-
     //emit người xem đến những người còn lại
-    socket.broadcast.to(user.currentRoom).emit('new-audience', {
-      userId,
+    socket.broadcast.to(user.currentRoom).emit('room-data', {
+      room,
     });
-    socket.on('audience-out', ({ userId }) => {
-      socket.broadcast.to(user.currentRoom).emit('audience-out-update', {
-        userId,
-      });
-    });
+    // socket.on('audience-out', ({ userId }) => {
+    //   socket.broadcast.to(user.currentRoom).emit('audience-out-update', {
+    //     userId,
+    //   });
+    // });
     socket.on('join-player-queue', ({ userId }) => {
       socket.broadcast
         .to(user.currentRoom)
@@ -106,13 +100,15 @@ const listenToUserOnlineEvent = (socket) => {
 
 const listenToSendMessageEvent = (io, socket) => {
   socket.on('sendMessage', async ({ message, userId }, callback) => {
+    console.log('In here');
     const user = await userService.getUserById(userId);
     //Lưu lại message
-    const room = await roomService.getRoomByRoomId(user.currentRoom);
+    let room = await roomService.getRoomByRoomId(user.currentRoom);
     let chat = new Chat({ user: user._id, content: message });
     chat = await chat.save();
     room.chat.push(chat);
-    await room.save();
+    room = await room.save();
+    console.log(room.chat);
     //Gửi mesage đến tất cả user trong phòng
     io.to(user.currentRoom).emit('message', {
       userId: user._id,
@@ -130,10 +126,11 @@ const listenToDisconnectEvent = (io, socket, userId) => {
     console.log('Disconnect ' + socket.id);
     let user = await userService.getUserById(userId);
 
-    //
-
     //Nếu user có ở trong 1 phòng
     if (user.currentRoom) {
+      console.log(userId, user.currentRoom);
+      const room = await roomService.outRoom(userId, user.currentRoom);
+      console.log(room);
       socket.leave(user.currentRoom);
       // Thông báo cho các user khác trong phòng rằng user này đã out khỏi phòng
       io.to(user.currentRoom).emit('message', {
@@ -141,7 +138,6 @@ const listenToDisconnectEvent = (io, socket, userId) => {
         text: `${user.name} đã rời phòng.`,
       });
       // Emit lại thông tin phòng
-      const room = await roomService.getRoomByRoomId(user.currentRoom);
       io.to(user.currentRoom).emit('roomData', {
         room: room,
       });
@@ -157,16 +153,17 @@ const listenToDisconnectEvent = (io, socket, userId) => {
 
 const listenToLeaveRoomEvent = (io, socket) => {
   socket.on('leave-room', async ({ userId }) => {
+    console.log('leave room');
     const user = await userService.getUserById(userId);
+    const room = await roomService.outRoom(userId, user.currentRoom);
     socket.leave(user.currentRoom);
-    // Thông báo cho các user khác trong phòng rằng user này đã out khỏi phòng
+    // Thông báo message cho các user khác trong phòng rằng user này đã out khỏi phòng
     io.to(user.currentRoom).emit('message', {
       userName: 'admin',
       text: `${user.name} đã rời phòng.`,
     });
     // Emit lại thông tin phòng
-    const room = await roomService.getRoomByRoomId(user.currentRoom);
-    io.to(user.currentRoom).emit('roomData', {
+    io.to(user.currentRoom).emit('room-data', {
       room: room,
     });
     user.currentRoom = null;
