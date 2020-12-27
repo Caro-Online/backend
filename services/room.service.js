@@ -54,14 +54,37 @@ const joinRoom = (userId, roomId) => {
   );
 };
 
-const outRoom = (userId, roomId) => {
-  return Room.findOneAndUpdate(
-    { roomId: roomId },
-    {
-      $pull: { audiences: userId },
-    },
-    { new: true }
-  );
+const outRoom = async (userId, roomId) => {
+  try {
+    let room = await Room.findOne({ roomId })
+      .populate({ path: 'chat', populate: { path: 'user' } })
+      .populate('audiences')
+      .populate('players.user')
+      .exec();
+    console.log('Room' + room._id);
+    let userInAudiences = true;
+    room.players.forEach((player) => {
+      if (player.user._id.toString() === userId.toString()) {
+        userInAudiences = false;
+      }
+    });
+    if (userInAudiences) {
+      updatedAudiences = room.audiences.filter(
+        (audience) => audience._id.toString() !== userId.toString()
+      );
+      room.audiences = updatedAudiences;
+      room = await room.save();
+    } else {
+      updatedPlayers = room.players.filter(
+        (player) => player.user._id.toString() !== userId.toString()
+      );
+      room.players = updatedPlayers;
+      room = await room.save();
+    }
+    return room;
+  } catch (error) {
+    console.log('Here' + error);
+  }
 };
 
 const joinPlayerQueue = (userId, roomId) => {

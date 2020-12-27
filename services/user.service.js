@@ -74,7 +74,7 @@ const getUserById = async (id) => {
 };
 
 const getAllUser = async (req) => {
-  console.log("search", req);
+  // console.log("search", req);
   let keyword = "";
   let filters = {};
   const query = req.query;
@@ -108,7 +108,7 @@ const getAllUser = async (req) => {
 };
 
 const search = async (req) => {
-  console.log("search", req);
+  // console.log("search", req);
   let keyword = "";
   const query = req.query;
   if (query) {
