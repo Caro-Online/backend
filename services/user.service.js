@@ -73,17 +73,44 @@ const getUserById = async (id) => {
   return user;
 };
 
-const getAllUser = async () => {
-  const users = await User.find({}, { __v: 0, password: 0 });
-  if (!users || users.length === 0) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Không thể tìm thấy user nào!");
+const getAllUser = async (req) => {
+  console.log("search", req);
+  let keyword = "";
+  let filters = {};
+  const query = req.query;
+  if (query) {
+    keyword = query.keyword || "";
+    filters = {
+      $or: [
+        {
+          name: {
+            $regex: keyword,
+            $options: "mi",
+          },
+        },
+        {
+          email: {
+            $regex: keyword,
+            $options: "mi",
+          },
+        },
+        {
+          phone: {
+            $regex: keyword,
+            $options: "mi",
+          },
+        },
+      ],
+    };
   }
+
+  const users = await User.find(filters, { __v: 0, password: 0 });
   return users;
 };
 
 const search = async (req) => {
   console.log("search", req);
-  let keyword = " ";
+  let keyword = "";
   const query = req.query;
   if (query) {
     keyword = query.keyword;
@@ -113,9 +140,6 @@ const search = async (req) => {
 
   const users = await User.find(filters, { __v: 0, password: 0 });
 
-  // if (!users || users.length === 0) {
-  //   throw new ApiError(httpStatus.NOT_FOUND, "Không thể tìm thấy user nào!");
-  // }
   return users;
 };
 
