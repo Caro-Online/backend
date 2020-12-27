@@ -13,9 +13,8 @@ const getMatchByMatchId = async (matchId) => {
     }
     return match;
 };
-
-const createMatch = (players, roomId,) => {
-    users.push(userId);
+//roomId: _id
+const createMatch = (players, roomId) => {
     const match = new Match({
         room: roomId,
         players: players,
@@ -24,8 +23,28 @@ const createMatch = (players, roomId,) => {
     });
     return match.save();
 };
+// Id of room = _id (khác với RoomId)
+//Trả về match tạo sau nhất theo createdAt
+const getCurrentMatchByIdOfRoom = (roomId) => {
+    const match = Match.find({ room: roomId }).sort({ createdAt: -1 }).limit(1)
+    if (match) return match[0]
+    return null
+}
+
+//thêm 1 bước đi vào lich sử
+const addMove = (matchId, index) => {
+    const filter = { _id: matchId };
+    const update = {
+        $push: {
+            history: index,
+        },
+    };
+    return Match.findOneAndUpdate(filter, update, { new: true })
+}
 
 module.exports = {
     createMatch,
-    getMatchByMatchId
+    getMatchByMatchId,
+    getCurrentMatchByIdOfRoom,
+    addMove
 };

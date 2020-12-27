@@ -5,6 +5,7 @@ const tokenService = require('./token.service');
 const socketService = require('./socket.service');
 const roomService = require('./room.service');
 const mailService = require('./mail.service');
+const matchService = require('./match.service');
 
 module.exports = {
   authUserService,
@@ -13,5 +14,6 @@ module.exports = {
   tokenService,
   socketService,
   roomService,
-  mailService
+  mailService,
+  matchService
 };
