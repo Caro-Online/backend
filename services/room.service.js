@@ -75,11 +75,11 @@ const outRoom = async (userId, roomId) => {
       room.audiences = updatedAudiences;
       room = await room.save();
     } else {
-      updatedPlayers = room.players.filter(
-        (player) => player.user._id.toString() !== userId.toString()
-      );
-      room.players = updatedPlayers;
-      room = await room.save();
+      // updatedPlayers = room.players.filter(
+      //   (player) => player.user._id.toString() !== userId.toString()
+      // );
+      // room.players = updatedPlayers;
+      // room = await room.save();
     }
     return room;
   } catch (error) {
@@ -87,16 +87,19 @@ const outRoom = async (userId, roomId) => {
   }
 };
 
-const joinPlayerQueue = (userId, roomId) => {
+const joinPlayerQueue = async (userId, roomId) => {
   const filter = { roomId: roomId };
   const update = {
     $addToSet: {
       players: { user: userId, isReady: true },
     },
   };
-  return Room.findOneAndUpdate(filter, update, { new: true }, (eror, room) => {
-    console.log(room.players);
-  });
+  const room = await Room.findOne(filter);
+  if (room.players.length === 2) {
+    return null
+  } else {
+    return Room.findOneAndUpdate(filter, update, { new: true })
+  }
 };
 
 // const updateCurrentRoom = async (userId, roomId) => {

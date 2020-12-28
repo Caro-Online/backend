@@ -25,23 +25,22 @@ const createMatch = (players, roomId) => {
 };
 // Id of room = _id (khác với RoomId)
 //Trả về match tạo sau nhất theo createdAt
-const getCurrentMatchByIdOfRoom = (roomId) => {
-    console.log("roomId: " + roomId)
-    const match = Match.find({ room: roomId }).sort({ createdAt: -1 }).limit(1)
-    if (match) return match
-    return null
+const getCurrentMatchByIdOfRoom = async (roomId) => {
+  console.log("roomId: " + roomId)
+  const match = await Match.find({ room: roomId }).sort({ createdAt: -1 }).limit(1).populate('players')
+  return match
 }
 
 //thêm 1 bước đi vào lich sử
 const addMove = (matchId, index, xIsNext) => {
-    const filter = { _id: matchId };
-    const update = {
-        $push: {
-            history: index,
-        },
-        xIsNext: xIsNext
-    };
-    return Match.findOneAndUpdate(filter, update, { new: true })
+  const filter = { _id: matchId };
+  const update = {
+    $push: {
+      history: index,
+    },
+    xIsNext: xIsNext
+  };
+  return Match.findOneAndUpdate(filter, update, { new: true })
 }
 
 module.exports = {

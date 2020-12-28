@@ -9,15 +9,22 @@ const createMatch = catchAsync(async (req, res) => {
 });
 
 const getCurrentMatchByIdOfRoom = catchAsync(async (req, res) => {
-    const { roomId } = req.params;
-    const match = await matchService.getCurrentMatchByIdOfRoom(roomId);
+  const { roomId } = req.params;
+  const match = await matchService.getCurrentMatchByIdOfRoom(roomId);
+  console.log(match)
+  if (match.length === 0) {
+    res.status(httpStatus.OK).json({ success: false, message: 'Khong co van dau hien tai' });
+  } else {
     res.status(httpStatus.OK).json({ success: true, match: match[0] });
+  }
+
+
 })
 
 const addMove = catchAsync(async (req, res) => {
-    const { index, matchId, xIsNext } = req.body;
-    const match = await matchService.addMove(matchId, index, xIsNext);
-    res.status(httpStatus.OK).json({ success: true, match });
+  const { index, matchId, xIsNext } = req.body;
+  const match = await matchService.addMove(matchId, index, xIsNext);
+  res.status(httpStatus.OK).json({ success: true, match });
 })
 
 module.exports = {
