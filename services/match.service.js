@@ -49,5 +49,5 @@ module.exports = {
   getMatchByMatchId,
   getCurrentMatchByIdOfRoom,
   addMove,
-  getHistoryByUserId,
+  // getHistoryByUserId,
 };

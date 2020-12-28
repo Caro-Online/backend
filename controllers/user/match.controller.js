@@ -24,5 +24,5 @@ module.exports = {
   createMatch,
   getCurrentMatchByIdOfRoom,
   addMove,
-  getMatchesHistoryByUserId,
+  // getMatchesHistoryByUserId,
 };
