@@ -8,7 +8,7 @@ const generateAuthToken = (user) => {
     },
     'mysupersecret',
     {
-      expiresIn: '1h',
+      expiresIn: '5h',
     }
   );
 };
