@@ -26,11 +26,25 @@ const createMatch = (players, roomId) => {
 // Id of room = _id (khác với RoomId)
 //Trả về match tạo sau nhất theo createdAt
 const getCurrentMatchByIdOfRoom = async (roomId) => {
-  console.log("roomId: " + roomId)
-  const match = await Match.find({ room: roomId }).sort({ createdAt: -1 }).limit(1).populate('players')
-  return match
-}
+  console.log("roomId: " + roomId);
+  const match = await Match.find({ room: roomId })
+    .sort({ createdAt: -1 })
+    .limit(1)
+    .populate("players");
+  return match;
+};
 
+const getHistoryByUserId = (userId) => {
+  console.log("getHistoryByUserId", userId);
+  const match = Match.find({
+    players: {
+      $in: userId,
+    },
+  })
+    .sort({ createdAt: -1 })
+    .limit(1);
+  return match;
+};
 //thêm 1 bước đi vào lich sử
 const addMove = (matchId, index, xIsNext) => {
   const filter = { _id: matchId };
@@ -38,15 +52,15 @@ const addMove = (matchId, index, xIsNext) => {
     $push: {
       history: index,
     },
-    xIsNext: xIsNext
+    xIsNext: xIsNext,
   };
-  return Match.findOneAndUpdate(filter, update, { new: true })
-}
+  return Match.findOneAndUpdate(filter, update, { new: true });
+};
 
 module.exports = {
   createMatch,
   getMatchByMatchId,
   getCurrentMatchByIdOfRoom,
   addMove,
-  // getHistoryByUserId,
+  getHistoryByUserId,
 };
