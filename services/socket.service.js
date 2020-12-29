@@ -15,6 +15,12 @@ const emitUserOffline = (userId) => {
   });
 };
 
+const emitRoomData = (room) => {
+  socketIo.getIO().to(room.roomId).emit('room-data', {
+    room,
+  });
+};
+
 const listenToConnectionEvent = (io) => {
   io.on('connection', (socket) => {
     console.log('Client connected ' + socket.id);
@@ -75,13 +81,8 @@ const listenToJoinEvent = (socket) => {
     //   });
     // });
     socket.on('join-players-queue', ({ userId }) => {
-      console.log("join-queue");
-      socket.broadcast
-        .to(user.currentRoom)
-        .emit('join-players-queue-update', { userId });
-      socket.broadcast
-        .to(user.currentRoom)
-        .emit('audience-out-update', { userId });
+      console.log('join-queue');
+      socket.broadcast.to(user.currentRoom).emit('room-data', { userId });
     });
     socket.on('match-start', ({ matchId }) => {
       socket.broadcast
@@ -180,5 +181,6 @@ const listenToLeaveRoomEvent = (io, socket) => {
 module.exports = {
   emitUserOnline,
   emitUserOffline,
+  emitRoomData,
   listenToConnectionEvent,
 };
