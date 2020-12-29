@@ -31,4 +31,10 @@ router.post(
   matchController.addMove
 );
 
+router.get(
+  "/:matchId",
+  passport.authenticate("jwt", { session: false }),
+  matchController.getMatchById
+);
+
 module.exports = router;

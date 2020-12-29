@@ -216,7 +216,7 @@ const updateStatusToOnline = (user) => {
 
 const initResetToken = (user) => {
   user.resetToken = resetToken;
-  user.resetTokenExpiration = Date.now() + 36000000; // Sau 1h không đổi mật khẩu sẽ timeout
+  user.resetTokenExpiration = Date.now() + 5 * 36000000; // Sau 5h không đổi mật khẩu sẽ timeout
   return user.save();
 };
 

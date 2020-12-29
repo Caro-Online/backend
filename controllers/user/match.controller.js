@@ -27,9 +27,16 @@ const addMove = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).json({ success: true, match });
 })
 
+const getMatchById = catchAsync(async (req, res) => {
+  const { matchId } = req.params
+  const match = await matchService.getMatchByMatchId(matchId);
+  res.status(httpStatus.OK).json({ success: true, match });
+})
+
 module.exports = {
   createMatch,
   getCurrentMatchByIdOfRoom,
   addMove,
+  getMatchById
   // getMatchesHistoryByUserId,
 };

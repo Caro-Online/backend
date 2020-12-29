@@ -74,13 +74,19 @@ const listenToJoinEvent = (socket) => {
     //     userId,
     //   });
     // });
-    socket.on('join-player-queue', ({ userId }) => {
+    socket.on('join-players-queue', ({ userId }) => {
+      console.log("join-queue");
       socket.broadcast
         .to(user.currentRoom)
-        .emit('join-match-update', { userId });
+        .emit('join-players-queue-update', { userId });
       socket.broadcast
         .to(user.currentRoom)
         .emit('audience-out-update', { userId });
+    });
+    socket.on('match-start', ({ matchId }) => {
+      socket.broadcast
+        .to(user.currentRoom)
+        .emit('match-start-update', { matchId });
     });
     socket.on('send-move', ({ move, roomId }) => {
       console.log(move + ' ' + roomId);

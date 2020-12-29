@@ -4,7 +4,7 @@ const { Match } = require("../models");
 const ApiError = require("../utils/ApiError");
 
 const getMatchByMatchId = async (matchId) => {
-  const match = await Match.findOne({ matchId });
+  const match = await Match.findById(matchId);
   if (!match) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
