@@ -93,12 +93,17 @@ const joinPlayerQueue = async (userId, roomId) => {
     $addToSet: {
       players: { user: userId, isReady: true },
     },
+    $pull: {
+      audiences: userId,
+    },
   };
   const room = await Room.findOne(filter);
   if (room.players.length === 2) {
-    return null
+    return null;
   } else {
-    return Room.findOneAndUpdate(filter, update, { new: true })
+    return await Room.findOneAndUpdate(filter, update, { new: true }).populate(
+      'players.user'
+    );
   }
 };
 
