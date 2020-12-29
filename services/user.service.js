@@ -47,8 +47,8 @@ const processUserLoginFacebookGoogle = async (name, email, imageUrl) => {
   return { user, token };
 };
 
-const getUserByEmail = async (email) => {
-  const user = await User.findOne({ email: email, isAdmin: false }, { __v: 0 });
+const getUserByEmail = async (email, isAdmin = false) => {
+  const user = await User.findOne({ email: email, isAdmin }, { __v: 0 });
   if (!user) {
     throw new ApiError(
       httpStatus.NOT_FOUND,

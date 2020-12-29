@@ -19,11 +19,11 @@ router.get(
   matchController.getCurrentMatchByIdOfRoom
 );
 //Lấy danh sách các trận đấu của user by id
-// router.get(
-//   "/user/:userId",
-//   passport.authenticate("jwt", { session: false }),
-//   matchController.getMatchesHistoryByUserId
-// );
+router.get(
+  "/user/:userId",
+  passport.authenticate("jwt", { session: false }),
+  matchController.getMatchesHistoryByUserId
+);
 
 router.post(
   "/addmove",
