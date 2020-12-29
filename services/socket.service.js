@@ -1,6 +1,7 @@
 const socketIo = require('../utils/socketio');
 const roomService = require('../services/room.service');
 const userService = require('../services/user.service');
+const matchService = require('../services/match.service');
 const { Chat } = require('../models');
 
 const emitUserOnline = (userId) => {
@@ -21,7 +22,7 @@ const listenToConnectionEvent = (io) => {
     const userId = socket.handshake.query.userId;
 
     //Lắng nghe sự kiện join room
-    listenToJoinEvent(socket);
+    listenToJoinEvent(socket, io);
 
     //Lắng nghe sự kiện leave room
     listenToLeaveRoomEvent(io, socket);
@@ -37,7 +38,7 @@ const listenToConnectionEvent = (io) => {
   });
 };
 
-const listenToJoinEvent = (socket) => {
+const listenToJoinEvent = (socket, io) => {
   socket.on('join', async ({ userId, roomId }, callback) => {
     // const { error, user } = addUser({ id: socket.id, name, room });
 
@@ -88,13 +89,19 @@ const listenToJoinEvent = (socket) => {
         .to(user.currentRoom)
         .emit('match-start-update', { matchId });
     });
-    socket.on('send-move', ({ move, roomId }) => {
-      console.log(move + ' ' + roomId);
-      socket.broadcast.to(roomId).emit('receive-move', { move });
+    socket.on('send-move', async ({ move, matchId }) => {
+      console.log(move + ' ' + matchId);
+      const check = await matchService.checkWin(matchId);
+      socket.broadcast.to(user.currentRoom).emit('receive-move', { move });
+      console.log(check)
+      if (check) {
+        io.in(user.currentRoom).emit('have-winner', { check });
+      }
     });
     callback();
   });
 };
+
 const listenToUserOnlineEvent = (socket) => {
   socket.on('user-online', async ({ userId }, callback) => {
     const user = await userService.getUserById(userId);

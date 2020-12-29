@@ -12,6 +12,7 @@ const matchSchema = mongoose.Schema(
     history: [{ type: Number }],
     // Người chiến thắng
     winner: { type: Schema.Types.ObjectId, ref: 'User' },
+    winRaw: [{ type: Number }],
     xIsNext: { type: Boolean, default: true }
   },
   { timestamps: true }
