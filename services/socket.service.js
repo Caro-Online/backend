@@ -21,6 +21,18 @@ const emitRoomData = (room) => {
   });
 };
 
+const emitRoomUpdate = (room) => {
+  socketIo.getIO().emit('room-update', {
+    room,
+  });
+};
+
+const emitNewRoom = (room) => {
+  socketIo.getIO().emit('new-room', {
+    room,
+  });
+};
+
 const listenToConnectionEvent = (io) => {
   io.on('connection', (socket) => {
     console.log('Client connected ' + socket.id);
@@ -135,9 +147,7 @@ const listenToDisconnectEvent = (io, socket, userId) => {
 
     //Nếu user có ở trong 1 phòng
     if (user.currentRoom) {
-      console.log(userId, user.currentRoom);
       const room = await roomService.outRoom(userId, user.currentRoom);
-      console.log(room);
       socket.leave(user.currentRoom);
       // Thông báo cho các user khác trong phòng rằng user này đã out khỏi phòng
       io.to(user.currentRoom).emit('message', {
@@ -181,6 +191,8 @@ const listenToLeaveRoomEvent = (io, socket) => {
 module.exports = {
   emitUserOnline,
   emitUserOffline,
+  emitRoomUpdate,
+  emitNewRoom,
   emitRoomData,
   listenToConnectionEvent,
 };
