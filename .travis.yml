@@ -1,0 +1,26 @@
+language: generic
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  # install heroku CLI
+  - wget -qO- https://toolbelt.heroku.com/install.sh | sh
+  # login to docker registries (dockerhub + heroku)
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - echo "$HEROKU_PASSWORD" | docker login -u "$HEROKU_USERNAME" --password-stdin registry.heroku.com
+
+script:
+  - docker build -t vanhiep778/caro-api -f Dockerfile .
+  - docker tag vanhiep778/caro-api registry.heroku.com/api-serverr/web
+
+deploy:
+  provider: script
+  script:
+    # push to dockerhub & heroku
+    docker push vanhiep778/caro-api;
+    docker push registry.heroku.com/api-serverr/web;
+    heroku container:release web --app api-serverr
+  on:
+    branch: main
