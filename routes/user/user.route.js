@@ -35,6 +35,12 @@ router.put(
   userController.updateStatusToOnline
 );
 
+router.put(
+  "/:userId",
+  passport.authenticate("jwt", { session: false }),
+  userController.update
+);
+
 //Lấy thông tin của user theo id
 router.get(
   "/:userId",

@@ -24,6 +24,19 @@ const updateStatusToOnline = catchAsync(async (req, res) => {
   user = await userService.updateStatusToOnline(user);
   res.status(httpStatus.OK).json({ success: true, user });
 });
+const update = catchAsync(async (req, res) => {
+  const userId = req.params.userId;
+  const modifiedUser = req.body.user;
+  let user = await userService.getUserById(userId);
+  const updatedUser = Object.assign(user, modifiedUser);
+  user = await userService.update(updatedUser);
+  // try {
+  // } catch (err) {
+  //   res.status(httpStatus.ERROR).json({ success: false, message: err });
+  //   return;
+  // }
+  res.status(httpStatus.OK).json({ success: true, user });
+});
 
 const getUserById = catchAsync(async (req, res) => {
   const userId = req.params.userId;
@@ -37,4 +50,5 @@ module.exports = {
   updateStatusToOnline,
   getUserById,
   getSearch,
+  update,
 };
