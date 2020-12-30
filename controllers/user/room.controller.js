@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 
 const catchAsync = require('../../utils/catchAsync');
-const { roomService } = require('../../services');
+const { roomService, socketService } = require('../../services');
 const { emitRoomData } = require('../../services/socket.service');
 
 const getAllRoom = catchAsync(async (req, res) => {
@@ -18,6 +18,7 @@ const getRoom = catchAsync(async (req, res) => {
 const createRoom = catchAsync(async (req, res) => {
   const { name, userId, rule, roomPassword } = req.body;
   const room = await roomService.createRoom(name, userId, rule, roomPassword);
+  socketService.emitNewRoom(room);
   res.status(httpStatus.OK).json({ success: true, room });
 });
 
@@ -25,12 +26,14 @@ const joinRoom = catchAsync(async (req, res) => {
   const { userId } = req.body;
   const { roomId } = req.params;
   const room = await roomService.joinRoom(userId, roomId);
+  socketService.emitRoomUpdate(room);
   res.status(httpStatus.OK).json({ success: true, room });
 });
 const outRoom = catchAsync(async (req, res) => {
   const { userId } = req.body;
   const { roomId } = req.params;
   const room = await roomService.outRoom(userId, roomId);
+  console.log('Here');
   res.status(httpStatus.OK).json({ success: true, room });
 });
 

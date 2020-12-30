@@ -1,6 +1,7 @@
 const socketIo = require('../utils/socketio');
 const roomService = require('../services/room.service');
 const userService = require('../services/user.service');
+const matchService = require('../services/match.service');
 const { Chat } = require('../models');
 
 const emitUserOnline = (userId) => {
@@ -21,13 +22,25 @@ const emitRoomData = (room) => {
   });
 };
 
+const emitRoomUpdate = (room) => {
+  socketIo.getIO().emit('room-update', {
+    room,
+  });
+};
+
+const emitNewRoom = (room) => {
+  socketIo.getIO().emit('new-room', {
+    room,
+  });
+};
+
 const listenToConnectionEvent = (io) => {
   io.on('connection', (socket) => {
     console.log('Client connected ' + socket.id);
     const userId = socket.handshake.query.userId;
 
     //Lắng nghe sự kiện join room
-    listenToJoinEvent(socket);
+    listenToJoinEvent(socket, io);
 
     //Lắng nghe sự kiện leave room
     listenToLeaveRoomEvent(io, socket);
@@ -43,7 +56,7 @@ const listenToConnectionEvent = (io) => {
   });
 };
 
-const listenToJoinEvent = (socket) => {
+const listenToJoinEvent = (socket, io) => {
   socket.on('join', async ({ userId, roomId }, callback) => {
     // const { error, user } = addUser({ id: socket.id, name, room });
 
@@ -89,13 +102,19 @@ const listenToJoinEvent = (socket) => {
         .to(user.currentRoom)
         .emit('match-start-update', { matchId });
     });
-    socket.on('send-move', ({ move, roomId }) => {
-      console.log(move + ' ' + roomId);
-      socket.broadcast.to(roomId).emit('receive-move', { move });
+    socket.on('send-move', async ({ move, matchId }) => {
+      console.log(move + ' ' + matchId);
+      const check = await matchService.checkWin(matchId);
+      socket.broadcast.to(user.currentRoom).emit('receive-move', { move });
+      console.log(check)
+      if (check) {
+        io.in(user.currentRoom).emit('have-winner', { check });
+      }
     });
     callback();
   });
 };
+
 const listenToUserOnlineEvent = (socket) => {
   socket.on('user-online', async ({ userId }, callback) => {
     const user = await userService.getUserById(userId);
@@ -135,9 +154,7 @@ const listenToDisconnectEvent = (io, socket, userId) => {
 
     //Nếu user có ở trong 1 phòng
     if (user.currentRoom) {
-      console.log(userId, user.currentRoom);
       const room = await roomService.outRoom(userId, user.currentRoom);
-      console.log(room);
       socket.leave(user.currentRoom);
       // Thông báo cho các user khác trong phòng rằng user này đã out khỏi phòng
       io.to(user.currentRoom).emit('message', {
@@ -181,6 +198,8 @@ const listenToLeaveRoomEvent = (io, socket) => {
 module.exports = {
   emitUserOnline,
   emitUserOffline,
+  emitRoomUpdate,
+  emitNewRoom,
   emitRoomData,
   listenToConnectionEvent,
 };

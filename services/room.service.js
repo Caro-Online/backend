@@ -46,8 +46,15 @@ const createRoom = (name, userId, rule, roomPassword) => {
   return room.save();
 };
 
-const joinRoom = (userId, roomId) => {
+const joinRoom = async (userId, roomId) => {
   const filter = { roomId: roomId };
+  const room = await Room.findOne(filter);
+  if (!room) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      'Không thể tìm thấy phòng tương ứng!'
+    );
+  }
   const update = { $addToSet: { audiences: userId } };
   return Room.findOneAndUpdate(filter, update, { new: true }).populate(
     'audiences'
