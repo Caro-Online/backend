@@ -5,7 +5,7 @@ FROM node:12-alpine
 
 
 COPY package.json .
-COPY package-lock.json .
+COPY yarn.lock .
 
 RUN yarn install
 
@@ -14,4 +14,4 @@ COPY . .
 ENV NODE_ENV=production
 
 EXPOSE 3001
-CMD yarn start-prod
+CMD yarn start
