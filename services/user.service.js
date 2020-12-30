@@ -213,6 +213,9 @@ const updateStatusToOnline = (user) => {
   user.status = "ONLINE";
   return user.save();
 };
+const update = (user) => {
+  return user.save();
+};
 
 const initResetToken = (user) => {
   user.resetToken = resetToken;
@@ -221,6 +224,7 @@ const initResetToken = (user) => {
 };
 
 module.exports = {
+  update,
   createUser,
   getUserByEmail,
   getAdminByEmail,
