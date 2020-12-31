@@ -103,10 +103,12 @@ const listenToJoinEvent = (socket, io) => {
         .emit('match-start-update', { matchId });
     });
     socket.on('send-move', async ({ move, matchId }) => {
-      console.log(move + ' ' + matchId);
+      console.log(socket.id, move + ' ' + matchId);
       const check = await matchService.checkWin(matchId);
-      socket.broadcast.to(user.currentRoom).emit('receive-move', { move });
-      console.log(check)
+      socket.broadcast
+        .to(user.currentRoom)
+        .emit('receive-move', { move, socketId: socket.id });
+      console.log(check);
       if (check) {
         io.in(user.currentRoom).emit('have-winner', { check });
       }
