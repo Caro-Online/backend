@@ -159,11 +159,11 @@ const checkWin = async (matchId) => {
       if (history.length % 2 === 0) {
         //số chẵn là O=> người chơi 2 win
         match.winner = match.players[1];
-        match.save();
+        await match.save();
         return { winRaw, winner: match.players[1] };
       } else {
         match.winner = match.players[0]; //ng chơi 1 thắng
-        match.save();
+        await match.save();
         return { winRaw, winner: match.players[0] };
       }
     }
