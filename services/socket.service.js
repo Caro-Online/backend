@@ -98,17 +98,28 @@ const listenToJoinEvent = (socket, io) => {
       socket.broadcast.to(user.currentRoom).emit('room-data', { userId });
     });
     socket.on('match-start', ({ matchId }) => {
+      console.log('emit match start update');
+      // Emit sự kiện match-start-update để update thông tin match cho các client còn lại trong phòng trừ thằng emit sự kiện match-start
       socket.broadcast
         .to(user.currentRoom)
         .emit('match-start-update', { matchId });
+      // Emit sự kiện match-start cho tất cả các client trong phòng để lắng nghe sự kiện receive-move
+      console.log(user.currentRoom);
+      console.log('Emit match-start');
+      // socket.to(user.currentRoom).emit('match-start', { matchId });
+      io.in(user.currentRoom).emit('match-start', { matchId });
     });
-    socket.on('send-move', async ({ move, matchId }) => {
-      console.log(move + ' ' + matchId);
+    socket.on('send-move', async ({ matchId }) => {
       const check = await matchService.checkWin(matchId);
-      socket.broadcast.to(user.currentRoom).emit('receive-move', { move });
-      console.log(check)
+      const match = await matchService.getMatchByMatchId(matchId);
+
+      console.log(check);
       if (check) {
-        io.in(user.currentRoom).emit('have-winner', { check });
+        io.in(user.currentRoom).emit('have-winner', { updatedMatch: match });
+      } else {
+        socket.broadcast
+          .to(user.currentRoom)
+          .emit('receive-move', { updatedMatch: match });
       }
     });
     callback();
