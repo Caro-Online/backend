@@ -8,6 +8,10 @@ const getAllRoom = catchAsync(async (req, res) => {
   const rooms = await roomService.getAllRoom();
   res.status(httpStatus.OK).json({ success: true, rooms });
 });
+const getRandomRoom = catchAsync(async (req, res) => {
+  const room = await roomService.getRandom();
+  res.status(httpStatus.OK).json({ success: true, room });
+});
 
 const getRoom = catchAsync(async (req, res) => {
   const { roomId } = req.params;
@@ -60,15 +64,16 @@ const joinPlayerQueue = catchAsync(async (req, res) => {
 const updateRoomStatus = catchAsync(async (req, res) => {
   const { roomId } = req.params;
   const { status } = req.body;
-  const room = await roomService.updateRoomStatus(roomId, status)
+  const room = await roomService.updateRoomStatus(roomId, status);
   if (room) {
     res.status(httpStatus.OK).json({ success: true, room });
   } else {
     res.status(httpStatus.OK).json({ success: false });
   }
-})
+});
 
 module.exports = {
+  getRandomRoom,
   getAllRoom,
   getRoom,
   getRoomDetail,
@@ -76,5 +81,5 @@ module.exports = {
   joinRoom,
   joinPlayerQueue,
   outRoom,
-  updateRoomStatus
+  updateRoomStatus,
 };
