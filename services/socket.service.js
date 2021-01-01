@@ -1,43 +1,46 @@
-const socketIo = require('../utils/socketio');
-const roomService = require('../services/room.service');
-const userService = require('../services/user.service');
-const matchService = require('../services/match.service');
-const { Chat } = require('../models');
+const socketIo = require("../utils/socketio");
+const roomService = require("../services/room.service");
+const userService = require("../services/user.service");
+const matchService = require("../services/match.service");
+const { Chat } = require("../models");
 
 const emitUserOnline = (userId) => {
-  socketIo.getIO().emit('user-online', {
+  socketIo.getIO().emit("user-online", {
     userId,
   });
 };
 
 const emitUserOffline = (userId) => {
-  socketIo.getIO().emit('user-offline', {
+  socketIo.getIO().emit("user-offline", {
     userId,
   });
 };
 
 const emitRoomData = (room) => {
-  socketIo.getIO().to(room.roomId).emit('room-data', {
+  socketIo.getIO().to(room.roomId).emit("room-data", {
     room,
   });
 };
 
 const emitRoomUpdate = (room) => {
-  socketIo.getIO().emit('room-update', {
+  socketIo.getIO().emit("room-update", {
     room,
   });
 };
 
 const emitNewRoom = (room) => {
-  socketIo.getIO().emit('new-room', {
+  socketIo.getIO().emit("new-room", {
     room,
   });
 };
 
 const listenToConnectionEvent = (io) => {
-  io.on('connection', (socket) => {
-    console.log('Client connected ' + socket.id);
+  io.on("connection", (socket) => {
+    console.log("Client connected " + socket.id);
     const userId = socket.handshake.query.userId;
+
+    //Lắng nghe sự kiện mời tham gia phòng
+    listenInvitation(io, socket);
 
     //Lắng nghe sự kiện join room
     listenToJoinEvent(socket, io);
@@ -55,9 +58,26 @@ const listenToConnectionEvent = (io) => {
     listenToDisconnectEvent(io, socket, userId);
   });
 };
-
+const listenInvitation = (io, socket) => {
+  socket.on("invitation", (data) => {
+    const invitedId = data?.invitedId;
+    if (invitedId) socket.join(invitedId);
+    const receivedId = data?.receivedId;
+    const roomId = data?.roomId;
+    const invitedName = data?.invitedName;
+    const message = `${invitedName} muốn mời bạn tham gia cùng.`;
+    console.log(
+      "client is subscribing to timer with interval ",
+      `invitation_${receivedId}`,
+      data
+    );
+    //Cho user tham gia vào phòng
+    // socket.emit(`invitation_${receivedId}`, { roomId, message });
+    socket.to(receivedId).emit(`receivedInvitation`, { roomId, message });
+  });
+};
 const listenToJoinEvent = (socket, io) => {
-  socket.on('join', async ({ userId, roomId }, callback) => {
+  socket.on("join", async ({ userId, roomId }, callback) => {
     // const { error, user } = addUser({ id: socket.id, name, room });
 
     let user;
@@ -75,17 +95,17 @@ const listenToJoinEvent = (socket, io) => {
     const room = await roomService.getRoomByRoomId(roomId);
 
     //Message tới user đó
-    socket.emit('message', {
-      userName: 'admin',
+    socket.emit("message", {
+      userName: "admin",
       text: `${user.name}, Chào mừng bạn đến với phòng ${room.name}.`,
     });
     //Message tới các user khác trong phòng
-    socket.broadcast.to(user.currentRoom).emit('message', {
-      userName: 'admin',
+    socket.broadcast.to(user.currentRoom).emit("message", {
+      userName: "admin",
       text: `${user.name} đã tham gia phòng!`,
     });
     //emit người xem đến những người còn lại
-    socket.broadcast.to(user.currentRoom).emit('room-data', {
+    socket.broadcast.to(user.currentRoom).emit("room-data", {
       room,
     });
     // socket.on('audience-out', ({ userId }) => {
@@ -93,55 +113,55 @@ const listenToJoinEvent = (socket, io) => {
     //     userId,
     //   });
     // });
-    socket.on('join-players-queue', ({ userId }) => {
-      console.log('join-queue');
-      socket.broadcast.to(user.currentRoom).emit('room-data', { userId });
+    socket.on("join-players-queue", ({ userId }) => {
+      console.log("join-queue");
+      socket.broadcast.to(user.currentRoom).emit("room-data", { userId });
     });
-    socket.on('match-start', ({ matchId }) => {
-      console.log('emit match start update');
+    socket.on("match-start", ({ matchId }) => {
+      console.log("emit match start update");
       // Emit sự kiện match-start-update để update thông tin match cho các client còn lại trong phòng trừ thằng emit sự kiện match-start
 
       socket.broadcast
         .to(user.currentRoom)
-        .emit('match-start-update', { matchId });
+        .emit("match-start-update", { matchId });
       // Emit sự kiện match-start cho tất cả các client trong phòng để lắng nghe sự kiện receive-move
-      io.in(user.currentRoom).emit('match-start', { matchId });
+      io.in(user.currentRoom).emit("match-start", { matchId });
     });
-    socket.on('send-move', async ({ matchId }) => {
+    socket.on("send-move", async ({ matchId }) => {
       // Kiểm tra thắng thua
       const check = await matchService.checkWin(matchId);
       // Lấy match
       const match = await matchService.getMatchByMatchId(matchId);
       if (check) {
-        io.in(user.currentRoom).emit('have-winner', { updatedMatch: match });
+        io.in(user.currentRoom).emit("have-winner", { updatedMatch: match });
       } else {
         socket.broadcast
           .to(user.currentRoom)
-          .emit('receive-move', { updatedMatch: match });
+          .emit("receive-move", { updatedMatch: match });
       }
     });
-    socket.on('end-match', async ({ matchId }) => {
+    socket.on("end-match", async ({ matchId }) => {
       // Lấy match
       const match = await matchService.getMatchByMatchId(matchId);
       socket.broadcast
         .to(user.currentRoom)
-        .emit('end-match', { updatedMatch: match });
+        .emit("end-match", { updatedMatch: match });
     });
     callback();
   });
 };
 
 const listenToUserOnlineEvent = (socket) => {
-  socket.on('user-online', async ({ userId }, callback) => {
+  socket.on("user-online", async ({ userId }, callback) => {
     const user = await userService.getUserById(userId);
-    user.status = 'ONLINE';
+    user.status = "ONLINE";
     await user.save();
     emitUserOnline(userId);
   });
 };
 
 const listenToSendMessageEvent = (io, socket) => {
-  socket.on('sendMessage', async ({ message, userId }, callback) => {
+  socket.on("sendMessage", async ({ message, userId }, callback) => {
     const user = await userService.getUserById(userId);
     //Lưu lại message
     let room = await roomService.getRoomByRoomId(user.currentRoom);
@@ -150,7 +170,7 @@ const listenToSendMessageEvent = (io, socket) => {
     room.chat.push(chat);
     room = await room.save();
     //Gửi mesage đến tất cả user trong phòng
-    io.to(user.currentRoom).emit('message', {
+    io.to(user.currentRoom).emit("message", {
       userId: user._id,
       userName: user.name,
       text: message,
@@ -162,8 +182,8 @@ const listenToSendMessageEvent = (io, socket) => {
 };
 
 const listenToDisconnectEvent = (io, socket, userId) => {
-  socket.on('disconnect', async (reason) => {
-    console.log('Disconnect ' + socket.id);
+  socket.on("disconnect", async (reason) => {
+    console.log("Disconnect " + socket.id);
     let user = await userService.getUserById(userId);
 
     //Nếu user có ở trong 1 phòng
@@ -171,18 +191,18 @@ const listenToDisconnectEvent = (io, socket, userId) => {
       const room = await roomService.outRoom(userId, user.currentRoom);
       socket.leave(user.currentRoom);
       // Thông báo cho các user khác trong phòng rằng user này đã out khỏi phòng
-      io.to(user.currentRoom).emit('message', {
-        userName: 'admin',
+      io.to(user.currentRoom).emit("message", {
+        userName: "admin",
         text: `${user.name} đã rời phòng.`,
       });
       // Emit lại thông tin phòng
-      io.to(user.currentRoom).emit('roomData', {
+      io.to(user.currentRoom).emit("roomData", {
         room: room,
       });
       user.currentRoom = null;
     }
     // Đổi status của user thành OFFLINE
-    user.status = 'OFFLINE';
+    user.status = "OFFLINE";
     user = await user.save();
     // Emit user-offline
     emitUserOffline(userId);
@@ -190,18 +210,18 @@ const listenToDisconnectEvent = (io, socket, userId) => {
 };
 
 const listenToLeaveRoomEvent = (io, socket) => {
-  socket.on('leave-room', async ({ userId }) => {
-    console.log('leave room');
+  socket.on("leave-room", async ({ userId }) => {
+    console.log("leave room");
     const user = await userService.getUserById(userId);
     const room = await roomService.outRoom(userId, user.currentRoom);
     socket.leave(user.currentRoom);
     // Thông báo message cho các user khác trong phòng rằng user này đã out khỏi phòng
-    io.to(user.currentRoom).emit('message', {
-      userName: 'admin',
+    io.to(user.currentRoom).emit("message", {
+      userName: "admin",
       text: `${user.name} đã rời phòng.`,
     });
     // Emit lại thông tin phòng
-    io.to(user.currentRoom).emit('room-data', {
+    io.to(user.currentRoom).emit("room-data", {
       room: room,
     });
     user.currentRoom = null;
