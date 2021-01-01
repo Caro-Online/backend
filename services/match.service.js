@@ -1,41 +1,46 @@
-const cryptoRandomString = require("crypto-random-string");
-const httpStatus = require("http-status");
-const { Match } = require("../models");
-const ApiError = require("../utils/ApiError");
+const cryptoRandomString = require('crypto-random-string');
+const httpStatus = require('http-status');
+const moment = require('moment');
+
+const { Match } = require('../models');
+const ApiError = require('../utils/ApiError');
 
 const getMatchByMatchId = async (matchId) => {
   const match = await Match.findById(matchId);
   if (!match) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      "Không thể tìm thấy trận tương ứng!"
+      'Không thể tìm thấy trận tương ứng!'
     );
   }
   return match;
 };
 //roomId: _id
 const createMatch = (players, roomId) => {
+  const date = new Date(Date.now() + 20 * 1000);
+  const timeExp = moment.utc(date).format();
   const match = new Match({
     room: roomId,
     players: players,
     history: [],
     winner: null,
+    timeExp: timeExp,
   });
   return match.save();
 };
 // Id of room = _id (khác với RoomId)
 //Trả về match tạo sau nhất theo createdAt
 const getCurrentMatchByIdOfRoom = async (roomId) => {
-  console.log("roomId: " + roomId);
+  console.log('roomId: ' + roomId);
   const match = await Match.find({ room: roomId })
     .sort({ createdAt: -1 })
     .limit(1)
-    .populate("players");
+    .populate('players');
   return match;
 };
 
 const getHistoryByUserId = (userId) => {
-  console.log("getHistoryByUserId", userId);
+  console.log('getHistoryByUserId', userId);
   const match = Match.find({
     players: {
       $in: userId,
@@ -44,31 +49,34 @@ const getHistoryByUserId = (userId) => {
   return match;
 };
 const getHistory = (data) => {
-  console.log("getHistory", data);
+  console.log('getHistory', data);
   const match = Match.find({
     room: data.roomId,
   })
     .sort({ createdAt: -1 })
-    .populate("players");
+    .populate('players');
   return match;
 };
 //thêm 1 bước đi vào lich sử
 const addMove = (matchId, index, xIsNext) => {
   const filter = { _id: matchId };
+  const date = new Date(Date.now() + 20 * 1000);
+  const timeExp = moment.utc(date).format();
   const update = {
     $push: {
       history: index,
     },
     xIsNext: xIsNext,
+    timeExp,
   };
-  return Match.findOneAndUpdate(filter, update, { new: true }).populate("room");
+  return Match.findOneAndUpdate(filter, update, { new: true }).populate('room');
 };
 const boardSize = 17;
 
 const create2DArray = () => {
   let array = Array(boardSize);
   for (let i = 0; i < boardSize; i++) {
-    array[i] = Array(boardSize).fill("null");
+    array[i] = Array(boardSize).fill('null');
   }
   return array;
 };
@@ -79,7 +87,7 @@ const historyTo2DArray = (history) => {
   for (let h = 0; h < history.length; h++) {
     let i = Math.floor(history[h] / boardSize);
     let j = history[h] % boardSize;
-    array[i][j] = h % 2 === 0 ? "X" : "O";
+    array[i][j] = h % 2 === 0 ? 'X' : 'O';
   }
 
   return array;
@@ -178,6 +186,21 @@ const checkWin = async (matchId) => {
   }
 };
 
+const endMatch = async (matchId, loserId) => {
+  const match = await getMatchByMatchId(matchId);
+  // Update lại match
+  const winnerId = match.players.filter(
+    (player) => player._id.toString() !== loserId.toString()
+  )[0];
+  console.log(winnerId);
+  // Set winner
+  match.winner = winnerId;
+  // Reset timeExp
+  match.timeExp = undefined;
+  match.save();
+  return match;
+};
+
 module.exports = {
   createMatch,
   getMatchByMatchId,
@@ -186,5 +209,6 @@ module.exports = {
   getHistory,
   getHistoryByUserId,
   checkWin,
+  endMatch,
   // getHistoryByUserId,
 };

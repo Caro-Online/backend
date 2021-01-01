@@ -1,6 +1,6 @@
-const httpStatus = require("http-status");
-const catchAsync = require("../../utils/catchAsync");
-const { matchService } = require("../../services");
+const httpStatus = require('http-status');
+const catchAsync = require('../../utils/catchAsync');
+const { matchService } = require('../../services');
 
 const createMatch = catchAsync(async (req, res) => {
   const { players, roomId } = req.body;
@@ -15,7 +15,7 @@ const getCurrentMatchByIdOfRoom = catchAsync(async (req, res) => {
   if (match.length === 0) {
     res
       .status(httpStatus.OK)
-      .json({ success: false, message: "Khong co van dau hien tai" });
+      .json({ success: false, message: 'Khong co van dau hien tai' });
   } else {
     res.status(httpStatus.OK).json({ success: true, match: match[0] });
   }
@@ -46,6 +46,13 @@ const getMatchById = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).json({ success: true, match });
 });
 
+const endMatch = catchAsync(async (req, res) => {
+  const { matchId } = req.params;
+  const { loserId } = req.body;
+  const match = await matchService.endMatch(matchId, loserId);
+  res.status(httpStatus.OK).json({ success: true, match });
+});
+
 module.exports = {
   createMatch,
   getCurrentMatchByIdOfRoom,
@@ -53,4 +60,5 @@ module.exports = {
   getMatchById,
   getMatchesHistoryByUserId,
   getMatchesHistory,
+  endMatch,
 };
