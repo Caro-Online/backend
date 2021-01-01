@@ -142,7 +142,6 @@ const listenToUserOnlineEvent = (socket) => {
 
 const listenToSendMessageEvent = (io, socket) => {
   socket.on('sendMessage', async ({ message, userId }, callback) => {
-    console.log('In here');
     const user = await userService.getUserById(userId);
     //Lưu lại message
     let room = await roomService.getRoomByRoomId(user.currentRoom);
@@ -150,7 +149,6 @@ const listenToSendMessageEvent = (io, socket) => {
     chat = await chat.save();
     room.chat.push(chat);
     room = await room.save();
-    console.log(room.chat);
     //Gửi mesage đến tất cả user trong phòng
     io.to(user.currentRoom).emit('message', {
       userId: user._id,

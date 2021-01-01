@@ -18,13 +18,13 @@ const getMatchByMatchId = async (matchId) => {
 //roomId: _id
 const createMatch = (players, roomId) => {
   const date = new Date(Date.now() + 20 * 1000);
-  // const timeExp = moment.utc(date).format();
+  const timeExp = moment.utc(date).format();
   const match = new Match({
     room: roomId,
     players: players,
     history: [],
     winner: null,
-    // timeExp: timeExp,
+    timeExp: timeExp,
   });
   return match.save();
 };
