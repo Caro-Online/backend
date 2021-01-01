@@ -50,6 +50,13 @@ router.put(
   roomController.outRoom
 )
 
+//Cập nhật trạng thái của phòng
+router.put(
+  '/:roomId/update-status',
+  passport.authenticate('jwt', { session: false }),
+  roomController.updateRoomStatus
+)
+
 
 
 

@@ -52,6 +52,17 @@ const joinPlayerQueue = catchAsync(async (req, res) => {
   }
 });
 
+const updateRoomStatus = catchAsync(async (req, res) => {
+  const { roomId } = req.params;
+  const { status } = req.body;
+  const room = await roomService.updateRoomStatus(roomId, status)
+  if (room) {
+    res.status(httpStatus.OK).json({ success: true, room });
+  } else {
+    res.status(httpStatus.OK).json({ success: false });
+  }
+})
+
 module.exports = {
   getAllRoom,
   getRoom,
@@ -59,4 +70,5 @@ module.exports = {
   joinRoom,
   joinPlayerQueue,
   outRoom,
+  updateRoomStatus
 };
