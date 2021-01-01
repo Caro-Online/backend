@@ -146,6 +146,14 @@ const updateRoomStatus = (roomId, status) => {
   return Room.findOneAndUpdate({ roomId }, { status }, { new: true });
 };
 
+const updatePlayerIsReady = async (roomId, userId, isReady) => {
+  return Room.findOneAndUpdate({ roomId, 'players.user': userId }, {
+    "$set": {
+      'players.$.isReady': isReady
+    }
+  })
+}
+
 module.exports = {
   getAllRoom,
   getRoomByRoomId,
@@ -156,4 +164,5 @@ module.exports = {
   outRoom,
   updateRoomStatus,
   getRandom,
+  updatePlayerIsReady
 };

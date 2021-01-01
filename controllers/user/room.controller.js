@@ -68,9 +68,20 @@ const updateRoomStatus = catchAsync(async (req, res) => {
   if (room) {
     res.status(httpStatus.OK).json({ success: true, room });
   } else {
-    res.status(httpStatus.OK).json({ success: false });
+    res.status(httpStatus.BAD_REQUEST).json({ success: false });
   }
 });
+
+const updatePlayerIsReady = catchAsync(async (req, res) => {
+  const { roomId } = req.params;
+  const { isReady, userId } = req.body
+  const room = await roomService.updatePlayerIsReady(roomId, userId, isReady)
+  if (room) {
+    res.status(httpStatus.OK).json({ success: true, room });
+  } else {
+    res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Lỗi Cập nhật trạng thái người chơi" });
+  }
+})
 
 module.exports = {
   getRandomRoom,
@@ -82,4 +93,5 @@ module.exports = {
   joinPlayerQueue,
   outRoom,
   updateRoomStatus,
+  updatePlayerIsReady
 };

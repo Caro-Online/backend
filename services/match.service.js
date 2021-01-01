@@ -1,8 +1,9 @@
 const cryptoRandomString = require('crypto-random-string');
 const httpStatus = require('http-status');
 const moment = require('moment');
+const roomService = require('./room.service');
 
-const { Match } = require('../models');
+const { Match, Room } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 const getMatchByMatchId = async (matchId) => {
@@ -170,16 +171,30 @@ const checkWin = async (matchId) => {
     const j = history[history.length - 1] % boardSize;
     const winRaw = alogithmn(b, i, j);
     if (winRaw) {
-      match.winRaw = winRaw;
-      if (history.length % 2 === 0) {
-        //số chẵn là O=> người chơi 2 win
-        match.winner = match.players[1];
-        await match.save();
-        return { winRaw, winner: match.players[1] };
-      } else {
-        match.winner = match.players[0]; //ng chơi 1 thắng
-        await match.save();
+      //cập nhật trạng thái isReady=false cho 2 user
+      await Room.findOneAndUpdate({ _id: match.room }, {
+        "$set": {
+          "players.$[].isReady": false,
+          status: "WAITING"
+        }
+      })
+      //cập nhật win raw và winner
+      if (history.length % 2 === 1) {//số lẻ là X=> người chơi 1 win
+        await match.update({
+          "$set": {
+            winRaw: winRaw,
+            winner: match.players[0]
+          }
+        })
         return { winRaw, winner: match.players[0] };
+      } else {
+        await match.update({
+          "$set": {
+            winRaw: winRaw,
+            winner: match.players[1]
+          }
+        })
+        return { winRaw, winner: match.players[1] };
       }
     }
     return false;

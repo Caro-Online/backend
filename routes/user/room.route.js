@@ -69,4 +69,11 @@ router.put(
   roomController.updateRoomStatus
 );
 
+//Cập nhật trạng thái của người chơi trong room
+router.put(
+  "/:roomId/update-player-isready",
+  passport.authenticate("jwt", { session: false }),
+  roomController.updatePlayerIsReady
+);
+
 module.exports = router;
