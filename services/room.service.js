@@ -12,6 +12,15 @@ const getAllRoom = async () => {
   }
   return rooms;
 };
+const getRandom = async () => {
+  const rooms = await Room.find({ status: "WAITING" })
+    .sort({ createdAt: -1 })
+    .limit(1);
+  if (!rooms || rooms.length === 0) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Không thể tìm thấy phòng nào!");
+  }
+  return rooms[0];
+};
 
 const getRoomByRoomId = async (roomId) => {
   const room = await Room.findOne({ roomId })
@@ -133,9 +142,9 @@ const joinPlayerQueue = async (userId, roomId) => {
 // };
 
 const updateRoomStatus = (roomId, status) => {
-  console.log(roomId + status)
-  return Room.findOneAndUpdate({ roomId }, { status }, { new: true })
-}
+  console.log(roomId + status);
+  return Room.findOneAndUpdate({ roomId }, { status }, { new: true });
+};
 
 module.exports = {
   getAllRoom,
@@ -145,6 +154,6 @@ module.exports = {
   joinRoom,
   joinPlayerQueue,
   outRoom,
-  updateRoomStatus
-  // updateCurrentRoom,
+  updateRoomStatus,
+  getRandom,
 };
