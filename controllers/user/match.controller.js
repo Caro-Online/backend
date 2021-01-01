@@ -20,6 +20,14 @@ const getCurrentMatchByIdOfRoom = catchAsync(async (req, res) => {
     res.status(httpStatus.OK).json({ success: true, match: match[0] });
   }
 });
+
+const getMatchesHistory = catchAsync(async (req, res) => {
+  const data = req.query;
+  console.log(req.query, data);
+  const matches = await matchService.getHistory(data);
+  res.status(httpStatus.OK).json({ success: true, matches });
+});
+
 const getMatchesHistoryByUserId = catchAsync(async (req, res) => {
   const { userId } = req.params;
   const matches = await matchService.getHistoryByUserId(userId);
@@ -44,4 +52,5 @@ module.exports = {
   addMove,
   getMatchById,
   getMatchesHistoryByUserId,
+  getMatchesHistory,
 };
