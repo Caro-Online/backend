@@ -13,6 +13,12 @@ router.get(
   passport.authenticate("jwt", { session: false }),
   roomController.getAllRoom
 );
+//Tìm nhanh phòng chơi
+router.get(
+  "/random",
+  passport.authenticate("jwt", { session: false }),
+  roomController.getRandomRoom
+);
 
 //Lấy thông tin phòng chơi
 router.get(
@@ -54,16 +60,13 @@ router.put(
   "/:roomId/out",
   passport.authenticate("jwt", { session: false }),
   roomController.outRoom
-)
+);
 
 //Cập nhật trạng thái của phòng
 router.put(
-  '/:roomId/update-status',
-  passport.authenticate('jwt', { session: false }),
+  "/:roomId/update-status",
+  passport.authenticate("jwt", { session: false }),
   roomController.updateRoomStatus
-)
-
-
-
+);
 
 module.exports = router;
