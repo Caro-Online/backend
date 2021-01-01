@@ -8,12 +8,13 @@ const matchSchema = mongoose.Schema(
     room: { type: Schema.Types.ObjectId, ref: 'Room' },
     // 2 người chơi
     players: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    timeExp: Date,
     // Lịch sử ván đấu
     history: [{ type: Number }],
     // Người chiến thắng
     winner: { type: Schema.Types.ObjectId, ref: 'User' },
     winRaw: [{ type: Number }],
-    xIsNext: { type: Boolean, default: true }
+    xIsNext: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
