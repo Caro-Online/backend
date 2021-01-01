@@ -112,12 +112,14 @@ const listenToJoinEvent = (socket, io) => {
     socket.on('send-move', async ({ matchId }) => {
       const check = await matchService.checkWin(matchId);
       const match = await matchService.getMatchByMatchId(matchId);
-      socket.broadcast
-        .to(user.currentRoom)
-        .emit('receive-move', { updatedMatch: match });
+
       console.log(check);
       if (check) {
         io.in(user.currentRoom).emit('have-winner', { updatedMatch: match });
+      } else {
+        socket.broadcast
+          .to(user.currentRoom)
+          .emit('receive-move', { updatedMatch: match });
       }
     });
     callback();
