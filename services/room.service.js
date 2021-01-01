@@ -132,6 +132,11 @@ const joinPlayerQueue = async (userId, roomId) => {
 //   room.
 // };
 
+const updateRoomStatus = (roomId, status) => {
+  console.log(roomId + status)
+  return Room.findOneAndUpdate({ roomId }, { status }, { new: true })
+}
+
 module.exports = {
   getAllRoom,
   getRoomByRoomId,
@@ -140,5 +145,6 @@ module.exports = {
   joinRoom,
   joinPlayerQueue,
   outRoom,
+  updateRoomStatus
   // updateCurrentRoom,
 };

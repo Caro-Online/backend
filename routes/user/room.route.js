@@ -54,6 +54,16 @@ router.put(
   "/:roomId/out",
   passport.authenticate("jwt", { session: false }),
   roomController.outRoom
-);
+)
+
+//Cập nhật trạng thái của phòng
+router.put(
+  '/:roomId/update-status',
+  passport.authenticate('jwt', { session: false }),
+  roomController.updateRoomStatus
+)
+
+
+
 
 module.exports = router;
