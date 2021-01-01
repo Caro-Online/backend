@@ -12,6 +12,14 @@ router.post(
   passport.authenticate("jwt", { session: false }),
   matchController.createMatch
 );
+
+//Lấy danh sách các trận đấu theo query
+router.get(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  matchController.getMatchesHistory
+);
+
 //Lấy trận hiện tại của id của phòng
 router.get(
   "/room/:roomId",
