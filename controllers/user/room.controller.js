@@ -51,7 +51,6 @@ const joinPlayerQueue = catchAsync(async (req, res) => {
   const { roomId } = req.params;
   const room = await roomService.joinPlayerQueue(userId, roomId);
   if (room) {
-    console.log(room);
     emitRoomData(room);
     res.status(httpStatus.OK).json({ success: true, room });
   } else {
