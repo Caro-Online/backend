@@ -1,17 +1,17 @@
-const cryptoRandomString = require('crypto-random-string');
-const httpStatus = require('http-status');
-const moment = require('moment');
-const roomService = require('./room.service');
+const cryptoRandomString = require("crypto-random-string");
+const httpStatus = require("http-status");
+const moment = require("moment");
+const roomService = require("./room.service");
 
-const { Match, Room } = require('../models');
-const ApiError = require('../utils/ApiError');
+const { Match, Room } = require("../models");
+const ApiError = require("../utils/ApiError");
 
 const getMatchByMatchId = async (matchId) => {
   const match = await Match.findById(matchId);
   if (!match) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      'Không thể tìm thấy trận tương ứng!'
+      "Không thể tìm thấy trận tương ứng!"
     );
   }
   return match;
@@ -32,30 +32,32 @@ const createMatch = (players, IdOfRoom) => {
 // Id of room = _id (khác với RoomId)
 //Trả về match tạo sau nhất theo createdAt
 const getCurrentMatchByIdOfRoom = async (roomId) => {
-  console.log('roomId: ' + roomId);
+  console.log("roomId: " + roomId);
   const match = await Match.find({ room: roomId })
     .sort({ createdAt: -1 })
     .limit(1)
-    .populate('players');
+    .populate("players");
   return match;
 };
 
 const getHistoryByUserId = (userId) => {
-  console.log('getHistoryByUserId', userId);
+  console.log("getHistoryByUserId", userId);
   const match = Match.find({
     players: {
       $in: userId,
     },
-  }).sort({ createdAt: -1 });
+  })
+    .sort({ createdAt: -1 })
+    .populate("room");
   return match;
 };
 const getHistory = (data) => {
-  console.log('getHistory', data);
+  console.log("getHistory", data);
   const match = Match.find({
     room: data.roomId,
   })
     .sort({ createdAt: -1 })
-    .populate('players');
+    .populate("players");
   return match;
 };
 //thêm 1 bước đi vào lich sử
@@ -70,14 +72,14 @@ const addMove = (matchId, index, xIsNext) => {
     xIsNext: xIsNext,
     timeExp,
   };
-  return Match.findOneAndUpdate(filter, update, { new: true }).populate('room');
+  return Match.findOneAndUpdate(filter, update, { new: true }).populate("room");
 };
 const boardSize = 17;
 
 const create2DArray = () => {
   let array = Array(boardSize);
   for (let i = 0; i < boardSize; i++) {
-    array[i] = Array(boardSize).fill('null');
+    array[i] = Array(boardSize).fill("null");
   }
   return array;
 };
@@ -88,7 +90,7 @@ const historyTo2DArray = (history) => {
   for (let h = 0; h < history.length; h++) {
     let i = Math.floor(history[h] / boardSize);
     let j = history[h] % boardSize;
-    array[i][j] = h % 2 === 0 ? 'X' : 'O';
+    array[i][j] = h % 2 === 0 ? "X" : "O";
   }
 
   return array;
@@ -172,28 +174,32 @@ const checkWin = async (matchId) => {
     const winRaw = alogithmn(b, i, j);
     if (winRaw) {
       //cập nhật trạng thái isReady=false cho 2 user
-      await Room.findOneAndUpdate({ _id: match.room }, {
-        "$set": {
-          "players.$[].isReady": false,
-          status: "WAITING"
+      await Room.findOneAndUpdate(
+        { _id: match.room },
+        {
+          $set: {
+            "players.$[].isReady": false,
+            status: "WAITING",
+          },
         }
-      })
+      );
       //cập nhật win raw và winner
-      if (history.length % 2 === 1) {//số lẻ là X=> người chơi 1 win
+      if (history.length % 2 === 1) {
+        //số lẻ là X=> người chơi 1 win
         await match.update({
-          "$set": {
+          $set: {
             winRaw: winRaw,
-            winner: match.players[0]
-          }
-        })
+            winner: match.players[0],
+          },
+        });
         return { winRaw, winner: match.players[0] };
       } else {
         await match.update({
-          "$set": {
+          $set: {
             winRaw: winRaw,
-            winner: match.players[1]
-          }
-        })
+            winner: match.players[1],
+          },
+        });
         return { winRaw, winner: match.players[1] };
       }
     }
