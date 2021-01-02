@@ -1,10 +1,10 @@
 const cryptoRandomString = require('crypto-random-string');
 const httpStatus = require('http-status');
 
-const { Room } = require("../models");
-const { populate } = require("../models/user.model");
-const ApiError = require("../utils/ApiError");
-const matchService = require("./match.service")
+const { Room } = require('../models');
+const { populate } = require('../models/user.model');
+const ApiError = require('../utils/ApiError');
+const matchService = require('./match.service');
 
 const getAllRoom = async () => {
   const rooms = await Room.find({});
@@ -139,9 +139,10 @@ const joinPlayerQueue = async (userId, roomId) => {
   if (room.players.length === 2) {
     return null;
   } else {
-    return await Room.findOneAndUpdate(filter, update, { new: true }).populate(
-      'players.user'
-    );
+    return await Room.findOneAndUpdate(filter, update, { new: true })
+      .populate({ path: 'chat', populate: { path: 'user' } })
+      .populate('audiences')
+      .populate('players.user');
   }
 };
 
@@ -156,14 +157,16 @@ const updateRoomStatus = (roomId, status) => {
 };
 
 const updatePlayerIsReady = async (roomId, userId, isReady) => {
-  return Room.findOneAndUpdate({ roomId, 'players.user': userId }, {
-    "$set": {
-      'players.$.isReady': isReady
-    }
-  }, { new: true })
-    .populate('players.user')
-
-}
+  return Room.findOneAndUpdate(
+    { roomId, 'players.user': userId },
+    {
+      $set: {
+        'players.$.isReady': isReady,
+      },
+    },
+    { new: true }
+  ).populate('players.user');
+};
 
 module.exports = {
   getAllRoom,
@@ -175,5 +178,5 @@ module.exports = {
   outRoom,
   updateRoomStatus,
   getRandom,
-  updatePlayerIsReady
+  updatePlayerIsReady,
 };

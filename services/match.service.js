@@ -203,11 +203,10 @@ const checkWin = async (matchId) => {
 
 const endMatch = async (matchId, loserId) => {
   const match = await getMatchByMatchId(matchId);
-  // Update lại match
+  // Tìm ra người chiến thắng
   const winnerId = match.players.filter(
     (player) => player._id.toString() !== loserId.toString()
   )[0];
-  console.log(winnerId);
   // Set winner
   match.winner = winnerId;
   // Reset timeExp
