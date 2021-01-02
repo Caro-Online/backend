@@ -1,9 +1,10 @@
 const cryptoRandomString = require('crypto-random-string');
 const httpStatus = require('http-status');
 
-const { Room } = require('../models');
-const { populate } = require('../models/user.model');
-const ApiError = require('../utils/ApiError');
+const { Room } = require("../models");
+const { populate } = require("../models/user.model");
+const ApiError = require("../utils/ApiError");
+const matchService = require("./match.service")
 
 const getAllRoom = async () => {
   const rooms = await Room.find({});
@@ -147,6 +148,16 @@ const updateRoomStatus = (roomId, status) => {
   return Room.findOneAndUpdate({ roomId }, { status }, { new: true });
 };
 
+const updatePlayerIsReady = async (roomId, userId, isReady) => {
+  return Room.findOneAndUpdate({ roomId, 'players.user': userId }, {
+    "$set": {
+      'players.$.isReady': isReady
+    }
+  }, { new: true })
+    .populate('players.user')
+
+}
+
 module.exports = {
   getAllRoom,
   getRoomByRoomId,
@@ -157,4 +168,5 @@ module.exports = {
   outRoom,
   updateRoomStatus,
   getRandom,
+  updatePlayerIsReady
 };
