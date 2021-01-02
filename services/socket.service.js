@@ -110,11 +110,6 @@ const listenToJoinEvent = (socket, io) => {
       userName: 'admin',
       text: `${user.name} đã tham gia phòng!`,
     });
-    // socket.on('audience-out', ({ userId }) => {
-    //   socket.broadcast.to(user.currentRoom).emit('audience-out-update', {
-    //     userId,
-    //   });
-    // });
     socket.on('join-players-queue', ({ userId }) => {
       console.log('join-queue');
       socket.broadcast.to(user.currentRoom).emit('room-data', { userId });
@@ -188,10 +183,12 @@ const listenToJoinEvent = (socket, io) => {
           [room.players[0].user, room.players[1].user],
           room._id
         );
-        io.in(user.currentRoom).emit("match-start-update", {//update match
+        io.in(user.currentRoom).emit('match-start-update', {
+          //update match
           matchId: match._id,
         });
-        io.in(user.currentRoom).emit("match-start", {//để init lại socket.on
+        io.in(user.currentRoom).emit('match-start', {
+          //để init lại socket.on
           matchId: match._id,
         });
       } else {

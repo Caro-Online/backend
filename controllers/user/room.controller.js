@@ -1,8 +1,8 @@
-const httpStatus = require("http-status");
+const httpStatus = require('http-status');
 
-const catchAsync = require("../../utils/catchAsync");
-const { roomService, socketService } = require("../../services");
-const { emitRoomData } = require("../../services/socket.service");
+const catchAsync = require('../../utils/catchAsync');
+const { roomService, socketService } = require('../../services');
+const { emitRoomData } = require('../../services/socket.service');
 
 const getAllRoom = catchAsync(async (req, res) => {
   const rooms = await roomService.getAllRoom();
@@ -42,7 +42,7 @@ const outRoom = catchAsync(async (req, res) => {
   const { userId } = req.body;
   const { roomId } = req.params;
   const room = await roomService.outRoom(userId, roomId);
-  console.log("Here");
+  console.log('Here');
   res.status(httpStatus.OK).json({ success: true, room });
 });
 
@@ -56,7 +56,7 @@ const joinPlayerQueue = catchAsync(async (req, res) => {
   } else {
     res
       .status(httpStatus.BAD_REQUEST)
-      .json({ success: false, message: "Phòng đã đầy" });
+      .json({ success: false, message: 'Phòng đã đầy' });
   }
 });
 
@@ -73,14 +73,23 @@ const updateRoomStatus = catchAsync(async (req, res) => {
 
 const updatePlayerIsReady = catchAsync(async (req, res) => {
   const { roomId } = req.params;
-  const { isReady, userId } = req.body
-  const room = await roomService.updatePlayerIsReady(roomId, userId, isReady)
+  const { isReady, userId } = req.body;
+  const room = await roomService.updatePlayerIsReady(roomId, userId, isReady);
   if (room) {
     res.status(httpStatus.OK).json({ success: true, room });
   } else {
-    res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Lỗi Cập nhật trạng thái người chơi" });
+    res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: 'Lỗi Cập nhật trạng thái người chơi' });
   }
-})
+});
+
+const updateRoomWhenPlayerNotReady = catchAsync(async (req, res) => {
+  const { roomId } = req.params;
+  const { userId } = req.body;
+  const room = await roomService.updateRoomWhenPlayerNotReady(roomId, userId);
+  res.status(httpStatus.OK).json({ success: true, room });
+});
 
 module.exports = {
   getRandomRoom,
@@ -92,5 +101,6 @@ module.exports = {
   joinPlayerQueue,
   outRoom,
   updateRoomStatus,
-  updatePlayerIsReady
+  updatePlayerIsReady,
+  updateRoomWhenPlayerNotReady,
 };

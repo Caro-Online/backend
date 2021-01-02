@@ -168,6 +168,24 @@ const updatePlayerIsReady = async (roomId, userId, isReady) => {
   ).populate('players.user');
 };
 
+const updateRoomWhenPlayerNotReady = async (roomId, userId) => {
+  let room = await getRoomByRoomId(roomId);
+  let updatedPlayers = room.players;
+  // Xóa player đó khỏi players
+  updatedPlayers = updatedPlayers.filter(
+    (player) => player.user._id.toString() !== userId.toString()
+  );
+  room.players = updatedPlayers;
+  // Set status phòng là waiting
+  room.status = 'WAITING';
+  // Nếu không còn người nào trong phòng thì set EMPTY phòng
+  if (room.players.length + room.audiences.length === 0) {
+    room.status = 'EMPTY';
+  }
+  room.save();
+  return room;
+};
+
 module.exports = {
   getAllRoom,
   getRoomByRoomId,
@@ -179,4 +197,5 @@ module.exports = {
   updateRoomStatus,
   getRandom,
   updatePlayerIsReady,
+  updateRoomWhenPlayerNotReady,
 };
