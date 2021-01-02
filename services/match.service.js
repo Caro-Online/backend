@@ -172,28 +172,32 @@ const checkWin = async (matchId) => {
     const winRaw = alogithmn(b, i, j);
     if (winRaw) {
       //cập nhật trạng thái isReady=false cho 2 user
-      await Room.findOneAndUpdate({ _id: match.room }, {
-        "$set": {
-          "players.$[].isReady": false,
-          status: "WAITING"
+      await Room.findOneAndUpdate(
+        { _id: match.room },
+        {
+          $set: {
+            'players.$[].isReady': false,
+            status: 'WAITING',
+          },
         }
-      })
+      );
       //cập nhật win raw và winner
-      if (history.length % 2 === 1) {//số lẻ là X=> người chơi 1 win
+      if (history.length % 2 === 1) {
+        //số lẻ là X=> người chơi 1 win
         await match.update({
-          "$set": {
+          $set: {
             winRaw: winRaw,
-            winner: match.players[0]
-          }
-        })
+            winner: match.players[0],
+          },
+        });
         return { winRaw, winner: match.players[0] };
       } else {
         await match.update({
-          "$set": {
+          $set: {
             winRaw: winRaw,
-            winner: match.players[1]
-          }
-        })
+            winner: match.players[1],
+          },
+        });
         return { winRaw, winner: match.players[1] };
       }
     }
@@ -210,7 +214,8 @@ const endMatch = async (matchId, loserId) => {
   // Set winner
   match.winner = winnerId;
   // Reset timeExp
-  match.timeExp = undefined;
+  const date = new Date(Date.now() + 20 * 1000);
+  match.timeExp = moment.utc(date).format();
   match.save();
   return match;
 };
