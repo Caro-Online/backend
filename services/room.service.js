@@ -4,6 +4,7 @@ const httpStatus = require("http-status");
 const { Room } = require("../models");
 const { populate } = require("../models/user.model");
 const ApiError = require("../utils/ApiError");
+const matchService = require("./match.service")
 
 const getAllRoom = async () => {
   const rooms = await Room.find({});
@@ -151,7 +152,9 @@ const updatePlayerIsReady = async (roomId, userId, isReady) => {
     "$set": {
       'players.$.isReady': isReady
     }
-  })
+  }, { new: true })
+    .populate('players.user')
+
 }
 
 module.exports = {

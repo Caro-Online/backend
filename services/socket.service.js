@@ -120,6 +120,27 @@ const listenToJoinEvent = (socket, io) => {
           .emit('receive-move', { updatedMatch: match });
       }
     });
+    socket.on('set-player-ready', async ({ userId }) => {
+      console.log("set-player-ready")
+      const room = await roomService.getRoomByRoomId(user.currentRoom);
+      let isAllReady = true;//tất cả players sẵn sàng = true
+      await room.players.forEach((player) => {
+        if (player.isReady === false) {
+          isAllReady = false;
+          return
+        }
+      })
+      if (isAllReady) {//nếu tất cả đã sẵn sàng thì tạo match mới
+        console.log("all ready");
+        const match = await matchService.createMatch([room.players[0].user, room.players[1].user], room._id);
+        io.in(user.currentRoom).emit('match-start-update', { matchId: match._id });
+      } else {
+        socket.broadcast
+          .to(user.currentRoom)
+          .emit('update-player-ready', { room })
+      }
+    });
+
     socket.on('end-match', async ({ matchId }) => {
       // Lấy match
       const match = await matchService.getMatchByMatchId(matchId);
@@ -127,6 +148,7 @@ const listenToJoinEvent = (socket, io) => {
         .to(user.currentRoom)
         .emit('end-match', { updatedMatch: match });
     });
+
     callback();
   });
 };

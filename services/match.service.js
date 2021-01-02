@@ -17,11 +17,11 @@ const getMatchByMatchId = async (matchId) => {
   return match;
 };
 //roomId: _id
-const createMatch = (players, roomId) => {
+const createMatch = (players, IdOfRoom) => {
   const date = new Date(Date.now() + 20 * 1000);
   // const timeExp = moment.utc(date).format();
   const match = new Match({
-    room: roomId,
+    room: IdOfRoom,
     players: players,
     history: [],
     winner: null,
