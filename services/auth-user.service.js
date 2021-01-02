@@ -44,7 +44,7 @@ const verifyIdTokenFromGoogle = async (idToken) => {
   const response = await client.verifyIdToken({
     idToken,
     audience:
-      '990188398227-bb3t5mt068kdj4350d3mvmqhcqeftkl8.apps.googleusercontent.com',
+      '1032785897839-f7ki1ppsk1bh0itmj2momm98qo09hcdc.apps.googleusercontent.com',
   });
   return response.payload;
 };
