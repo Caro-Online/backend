@@ -99,19 +99,26 @@ const outRoom = async (userId, roomId) => {
         userInAudiences = false;
       }
     });
+    // Nếu user nằm trong audiences thì out khỏi audiences
     if (userInAudiences) {
       updatedAudiences = room.audiences.filter(
         (audience) => audience._id.toString() !== userId.toString()
       );
       room.audiences = updatedAudiences;
-      room = await room.save();
     } else {
-      // updatedPlayers = room.players.filter(
-      //   (player) => player.user._id.toString() !== userId.toString()
-      // );
-      // room.players = updatedPlayers;
-      // room = await room.save();
+      // Nếu nằm trong players mà trạng thái phòng khác đang chơi thì cho user out khỏi players
+      if (room.status !== 'PLAYING') {
+        updatedPlayers = room.players.filter(
+          (player) => player.user._id.toString() !== userId.toString()
+        );
+        room.players = updatedPlayers;
+      }
     }
+    // Nếu không còn ai trong phòng thì set status = EMPTY
+    if (room.players.length + room.audiences.length === 0) {
+      room.status = 'EMPTY';
+    }
+    room.save();
     return room;
   } catch (error) {
     console.log('Here' + error);
