@@ -46,7 +46,9 @@ const getHistoryByUserId = (userId) => {
     players: {
       $in: userId,
     },
-  }).sort({ createdAt: -1 });
+  })
+    .sort({ createdAt: -1 })
+    .populate('room');
   return match;
 };
 const getHistory = (data) => {
