@@ -60,11 +60,11 @@ const listenToConnectionEvent = (io) => {
 };
 const listenInvitation = (io, socket) => {
   socket.on("invitation", (data) => {
-    const invitedId = data?.invitedId;
+    const invitedId = data ? data.invitedId : null;
     if (invitedId) socket.join(invitedId);
-    const receivedId = data?.receivedId;
-    const roomId = data?.roomId;
-    const invitedName = data?.invitedName;
+    const receivedId = data ? data.receivedId : null;
+    const roomId = data ? data.roomId : null;
+    const invitedName = data ? data.invitedName : "";
     const message = `${invitedName} muốn mời bạn tham gia cùng.`;
     console.log(
       "client is subscribing to timer with interval ",
@@ -140,28 +140,34 @@ const listenToJoinEvent = (socket, io) => {
           .emit("receive-move", { updatedMatch: match });
       }
     });
-    socket.on('set-player-ready', async ({ userId }) => {
-      console.log("set-player-ready")
+    socket.on("set-player-ready", async ({ userId }) => {
+      console.log("set-player-ready");
       const room = await roomService.getRoomByRoomId(user.currentRoom);
-      let isAllReady = true;//tất cả players sẵn sàng = true
+      let isAllReady = true; //tất cả players sẵn sàng = true
       await room.players.forEach((player) => {
         if (player.isReady === false) {
           isAllReady = false;
-          return
+          return;
         }
-      })
-      if (isAllReady) {//nếu tất cả đã sẵn sàng thì tạo match mới
+      });
+      if (isAllReady) {
+        //nếu tất cả đã sẵn sàng thì tạo match mới
         console.log("all ready");
-        const match = await matchService.createMatch([room.players[0].user, room.players[1].user], room._id);
-        io.in(user.currentRoom).emit('match-start-update', { matchId: match._id });
+        const match = await matchService.createMatch(
+          [room.players[0].user, room.players[1].user],
+          room._id
+        );
+        io.in(user.currentRoom).emit("match-start-update", {
+          matchId: match._id,
+        });
       } else {
         socket.broadcast
           .to(user.currentRoom)
-          .emit('update-player-ready', { room })
+          .emit("update-player-ready", { room });
       }
     });
 
-    socket.on('end-match', async ({ matchId }) => {
+    socket.on("end-match", async ({ matchId }) => {
       // Lấy match
       const match = await matchService.getMatchByMatchId(matchId);
       socket.broadcast
