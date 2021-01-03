@@ -165,53 +165,51 @@ const alogithmn = (b, i, j) => {
 //checkWin
 const checkWin = async (matchId, updatedMatch) => {
   const match = await getMatchByMatchId(matchId);
-  if (match) {
-    //move= i*boardSize+j
-    const { history } = match;
-    const b = historyTo2DArray(history);
-    const i = Math.floor(history[history.length - 1] / boardSize);
-    const j = history[history.length - 1] % boardSize;
-    const winRaw = alogithmn(b, i, j);
-    let cupDataChange;
-    if (winRaw) {
-      //cập nhật trạng thái isReady=false cho 2 user
-      await Room.findOneAndUpdate(
-        { _id: match.room },
-        {
-          $set: {
-            'players.$[].isReady': false,
-            status: 'WAITING',
-          },
-        }
-      );
-      let winner;
-      //cập nhật win raw và winner
-      if (history.length % 2 === 1) {
-        //số lẻ là X=> người chơi 1 win
-        winner = match.players[0]._id;
-        await match.update({
-          $set: {
-            winRaw: winRaw,
-            winner: match.players[0]._id,
-          },
-        });
-        cupDataChange = await updateUser(winner, match.players);
-        return { winRaw, winner, cupDataChange };
-      } else {
-        winner = match.players[1]._id;
-        await match.update({
-          $set: {
-            winRaw: winRaw,
-            winner: match.players[1]._id,
-          },
-        });
-        cupDataChange = await updateUser(winner, match.players);
-        return { winRaw, winner, cupDataChange };
+  //move= i*boardSize+j
+  const { history } = updatedMatch;
+  const b = historyTo2DArray(history);
+  const i = Math.floor(history[history.length - 1] / boardSize);
+  const j = history[history.length - 1] % boardSize;
+  const winRaw = alogithmn(b, i, j);
+  let cupDataChange;
+  if (winRaw) {
+    //cập nhật trạng thái isReady=false cho 2 user
+    await Room.findOneAndUpdate(
+      { _id: updatedMatch.room },
+      {
+        $set: {
+          'players.$[].isReady': false,
+          status: 'WAITING',
+        },
       }
+    );
+    let winner;
+    //cập nhật win raw và winner
+    if (history.length % 2 === 1) {
+      //số lẻ là X=> người chơi 1 win
+      winner = updatedMatch.players[0]._id;
+      await match.update({
+        $set: {
+          winRaw: winRaw,
+          winner: updatedMatch.players[0]._id,
+        },
+      });
+      cupDataChange = await updateUser(winner, updatedMatch.players);
+      return { winRaw, winner, cupDataChange };
+    } else {
+      winner = updatedMatch.players[1]._id;
+      await match.update({
+        $set: {
+          winRaw: winRaw,
+          winner: updatedMatch.players[1]._id,
+        },
+      });
+      cupDataChange = await updateUser(winner, updatedMatch.players);
+      return { winRaw, winner, cupDataChange };
     }
-
-    return false;
   }
+
+  return false;
 };
 
 const updateUser = async (winner, players) => {
