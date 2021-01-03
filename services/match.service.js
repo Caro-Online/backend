@@ -171,6 +171,7 @@ const checkWin = async (matchId, updatedMatch) => {
   const i = Math.floor(history[history.length - 1] / boardSize);
   const j = history[history.length - 1] % boardSize;
   const winRaw = alogithmn(b, i, j);
+  let cupDataChange;
   if (winRaw) {
     //cập nhật trạng thái isReady=false cho 2 user
     await Room.findOneAndUpdate(
@@ -208,6 +209,7 @@ const checkWin = async (matchId, updatedMatch) => {
       return { winRaw, winner, cupDataChange };
     }
   }
+
   return false;
 };
 
