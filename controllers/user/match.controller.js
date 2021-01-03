@@ -52,8 +52,13 @@ const getMatchById = catchAsync(async (req, res) => {
 const endMatch = catchAsync(async (req, res) => {
   const { matchId } = req.params;
   const { loserId } = req.body;
-  const match = await matchService.endMatch(matchId, loserId);
-  res.status(httpStatus.OK).json({ success: true, match });
+  const endData = await matchService.endMatch(matchId, loserId);
+  if (endData) {
+    res.status(httpStatus.OK).json({ success: true, endData });
+  } else {
+    res.status(httpStatus.OK).json({ success: false, message: "end match failed" });
+  }
+
 });
 
 module.exports = {

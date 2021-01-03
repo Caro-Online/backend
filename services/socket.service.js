@@ -163,6 +163,7 @@ const listenToJoinEvent = (socket, io) => {
             winner: check.winner,
             winRaw: check.winRaw,
           },
+          cupDataChange: check.cupDataChange
         });
       } else {
         socket.broadcast
