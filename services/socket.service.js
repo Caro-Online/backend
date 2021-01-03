@@ -5,6 +5,7 @@ const matchService = require('../services/match.service');
 const { Chat } = require('../models');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('http-status');
+const moment = require('moment');
 
 const emitUserOnline = (userId) => {
   socketIo.getIO().emit('user-online', {
@@ -157,13 +158,16 @@ const listenToJoinEvent = (socket, io) => {
       // Kiểm tra thắng thua
       const check = await matchService.checkWin(match._id, match);
       if (check) {
+        const date = new Date(Date.now() + room.countdownDuration * 1000);
+        const timeExp = moment.utc(date).format();
         io.in(user.currentRoom).emit('have-winner', {
           updatedMatch: {
             ...match,
             winner: check.winner,
             winRaw: check.winRaw,
+            timeExp: timeExp,
           },
-          cupDataChange: check.cupDataChange
+          cupDataChange: check.cupDataChange,
         });
       } else {
         socket.broadcast

@@ -224,33 +224,44 @@ const updateUser = async (winner, players) => {
   console.log(winner);
   if (players[0]._id === winner) {
     await Promise.all([
-      User.findOneAndUpdate({ _id: players[0]._id }, {
-        cup: players[0].cup + p1Offer.plusCup,
-        matchHavePlayed: players[0].matchHavePlayed + 1,
-        matchHaveWon: players[0].matchHaveWon + 1
-      }),
-      User.findOneAndUpdate({ _id: players[1]._id }, {
-        cup: players[1].cup - p2Offer.subCup,
-        matchHavePlayed: players[1].matchHavePlayed + 1,
-      })
-    ])
-    return [p1Offer.plusCup, p2Offer.subCup]//[cúp cộng, cúp trừ]
+      User.findOneAndUpdate(
+        { _id: players[0]._id },
+        {
+          cup: players[0].cup + p1Offer.plusCup,
+          matchHavePlayed: players[0].matchHavePlayed + 1,
+          matchHaveWon: players[0].matchHaveWon + 1,
+        }
+      ),
+      User.findOneAndUpdate(
+        { _id: players[1]._id },
+        {
+          cup: players[1].cup - p2Offer.subCup,
+          matchHavePlayed: players[1].matchHavePlayed + 1,
+        }
+      ),
+    ]);
+    return [p1Offer.plusCup, p2Offer.subCup]; //[cúp cộng, cúp trừ]
   } else {
     await Promise.all([
-      User.findOneAndUpdate({ _id: players[0]._id }, {
-        cup: players[0].cup - p1Offer.subCup,
-        matchHavePlayed: players[0].matchHavePlayed + 1
-      }),
-      User.findOneAndUpdate({ _id: players[1]._id }, {
-        cup: players[1].cup + p2Offer.plusCup,
-        matchHavePlayed: players[1].matchHavePlayed + 1,
-        matchHaveWon: players[1].matchHaveWon + 1
-      })
-    ])
-    return [p2Offer.plusCup, p1Offer.subCup];//[cúp cộng, cúp trừ]
+      User.findOneAndUpdate(
+        { _id: players[0]._id },
+        {
+          cup: players[0].cup - p1Offer.subCup,
+          matchHavePlayed: players[0].matchHavePlayed + 1,
+        }
+      ),
+      User.findOneAndUpdate(
+        { _id: players[1]._id },
+        {
+          cup: players[1].cup + p2Offer.plusCup,
+          matchHavePlayed: players[1].matchHavePlayed + 1,
+          matchHaveWon: players[1].matchHaveWon + 1,
+        }
+      ),
+    ]);
+    return [p2Offer.plusCup, p1Offer.subCup]; //[cúp cộng, cúp trừ]
   }
-
-}
+};
 
 const endMatch = async (matchId, loserId) => {
   const match = await getMatchByMatchId(matchId);
@@ -263,7 +274,7 @@ const endMatch = async (matchId, loserId) => {
   // Reset timeExp
   const date = new Date(Date.now() + 20 * 1000);
   match.timeExp = moment.utc(date).format();
-  await match.save();
+  match.save();
   const cupDataChange = await updateUser(winner._id, match.players);
   return { match, cupDataChange };
   //udpate cup,matchhavewin,matchplayed
