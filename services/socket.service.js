@@ -150,8 +150,8 @@ const listenToJoinEvent = (socket, io) => {
       socket.broadcast
         .to(user.currentRoom)
         .emit('match-start-update', { matchId });
-      // Emit sự kiện match-start cho tất cả các client trong phòng để lắng nghe sự kiện receive-move
-      io.in(user.currentRoom).emit('match-start', { matchId });
+      // // Emit sự kiện match-start cho tất cả các client trong phòng để lắng nghe sự kiện receive-move
+      // io.in(user.currentRoom).emit('match-start', { matchId });
     });
     socket.on('send-move', async ({ matchId }) => {
       // Kiểm tra thắng thua
@@ -187,10 +187,10 @@ const listenToJoinEvent = (socket, io) => {
           //update match
           matchId: match._id,
         });
-        io.in(user.currentRoom).emit('match-start', {
-          //để init lại socket.on
-          matchId: match._id,
-        });
+        // io.in(user.currentRoom).emit('match-start', {
+        //   //để init lại socket.on
+        //   matchId: match._id,
+        // });
       } else {
         socket.broadcast
           .to(user.currentRoom)

@@ -25,8 +25,8 @@ const getRoomDetail = catchAsync(async (req, res) => {
 });
 
 const createRoom = catchAsync(async (req, res) => {
-  const { name, userId, rule, roomPassword } = req.body;
-  const room = await roomService.createRoom(name, userId, rule, roomPassword);
+  const { name, userId, rule, roomPassword, countdownDuration } = req.body;
+  const room = await roomService.createRoom(name, userId, rule, roomPassword,countdownDuration);
   socketService.emitNewRoom(room);
   res.status(httpStatus.OK).json({ success: true, room });
 });

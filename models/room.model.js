@@ -42,6 +42,8 @@ const roomSchema = mongoose.Schema(
     },
     // Nội dung chat của của phòng
     chat: [{ type: Schema.Types.ObjectId, ref: 'Chat' }],
+    // Thời gian cho 1 nước
+    countdownDuration: Number,
   },
   { timestamps: true }
 );

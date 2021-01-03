@@ -50,7 +50,7 @@ const getRoomById = async (id) => {
   return room;
 };
 
-const createRoom = (name, userId, rule, roomPassword) => {
+const createRoom = (name, userId, rule, roomPassword, countdownDuration) => {
   // Create random roomId
   const roomId = cryptoRandomString({ length: 6, type: 'hex' });
   const room = new Room({
@@ -65,6 +65,7 @@ const createRoom = (name, userId, rule, roomPassword) => {
     ],
     status: 'WAITING',
     rule,
+    countdownDuration,
   });
   return room.save();
 };

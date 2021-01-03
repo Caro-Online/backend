@@ -1,10 +1,12 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../../utils/catchAsync');
-const { matchService } = require('../../services');
+const { matchService, roomService } = require('../../services');
 
 const createMatch = catchAsync(async (req, res) => {
   const { players, roomId } = req.body;
-  const match = await matchService.createMatch(players, roomId);
+  // tìm countdownduration của room
+  const room = await roomService.getRoomById(roomId);
+  const match = await matchService.createMatch(players, room);
   res.status(httpStatus.OK).json({ success: true, match });
 });
 
@@ -35,8 +37,9 @@ const getMatchesHistoryByUserId = catchAsync(async (req, res) => {
 });
 
 const addMove = catchAsync(async (req, res) => {
-  const { index, matchId, xIsNext } = req.body;
-  const match = await matchService.addMove(matchId, index, xIsNext);
+  const { index, matchId, xIsNext, roomId } = req.body;
+  const room = await roomService.getRoomByRoomId(roomId);
+  const match = await matchService.addMove(matchId, index, xIsNext, room);
   res.status(httpStatus.OK).json({ success: true, match });
 });
 

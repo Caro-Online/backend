@@ -17,11 +17,11 @@ const getMatchByMatchId = async (matchId) => {
   return match;
 };
 //roomId: _id
-const createMatch = (players, IdOfRoom) => {
-  const date = new Date(Date.now() + 20 * 1000);
+const createMatch = (players, room) => {
+  const date = new Date(Date.now() + room.countdownDuration * 1000);
   const timeExp = moment.utc(date).format();
   const match = new Match({
-    room: IdOfRoom,
+    room: room._id,
     players: players,
     history: [],
     winner: null,
@@ -61,9 +61,9 @@ const getHistory = (data) => {
   return match;
 };
 //thêm 1 bước đi vào lich sử
-const addMove = (matchId, index, xIsNext) => {
+const addMove = (matchId, index, xIsNext, room) => {
   const filter = { _id: matchId };
-  const date = new Date(Date.now() + 20 * 1000);
+  const date = new Date(Date.now() + room.countdownDuration * 1000);
   const timeExp = moment.utc(date).format();
   const update = {
     $push: {
