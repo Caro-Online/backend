@@ -155,9 +155,15 @@ const listenToJoinEvent = (socket, io) => {
     });
     socket.on('send-move', async ({ match }) => {
       // Kiểm tra thắng thua
-      const check = await matchService.checkWin(match);
+      const check = await matchService.checkWin(match._id, match);
       if (check) {
-        io.in(user.currentRoom).emit('have-winner', { updatedMatch: match });
+        io.in(user.currentRoom).emit('have-winner', {
+          updatedMatch: {
+            ...match,
+            winner: check.winner,
+            winRaw: check.winRaw,
+          },
+        });
       } else {
         socket.broadcast
           .to(user.currentRoom)

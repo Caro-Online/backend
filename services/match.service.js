@@ -4,6 +4,7 @@ const moment = require('moment');
 const roomService = require('./room.service');
 const { Match, Room, User } = require('../models');
 const ApiError = require('../utils/ApiError');
+const { matchService } = require('.');
 
 const getMatchByMatchId = async (matchId) => {
   const match = await Match.findById(matchId).populate('players');
@@ -162,9 +163,10 @@ const alogithmn = (b, i, j) => {
 };
 
 //checkWin
-const checkWin = async (match) => {
+const checkWin = async (matchId, updatedMatch) => {
+  const match = await getMatchByMatchId(matchId);
   //move= i*boardSize+j
-  const { history } = match;
+  const { history } = updatedMatch;
   const b = historyTo2DArray(history);
   const i = Math.floor(history[history.length - 1] / boardSize);
   const j = history[history.length - 1] % boardSize;
@@ -172,7 +174,7 @@ const checkWin = async (match) => {
   if (winRaw) {
     //cập nhật trạng thái isReady=false cho 2 user
     await Room.findOneAndUpdate(
-      { _id: match.room },
+      { _id: updatedMatch.room },
       {
         $set: {
           'players.$[].isReady': false,
@@ -184,24 +186,24 @@ const checkWin = async (match) => {
     //cập nhật win raw và winner
     if (history.length % 2 === 1) {
       //số lẻ là X=> người chơi 1 win
-      winner = match.players[0]._id;
+      winner = updatedMatch.players[0]._id;
       await match.update({
         $set: {
           winRaw: winRaw,
-          winner: match.players[0]._id,
+          winner: updatedMatch.players[0]._id,
         },
       });
-      updateUser(winner, match.players);
+      updateUser(winner, updatedMatch.players);
       return { winRaw, winner };
     } else {
-      winner = match.players[1]._id;
+      winner = updatedMatch.players[1]._id;
       await match.update({
         $set: {
           winRaw: winRaw,
-          winner: match.players[1]._id,
+          winner: updatedMatch.players[1]._id,
         },
       });
-      updateUser(winner, match.players);
+      updateUser(winner, updatedMatch.players);
       return { winRaw, winner };
     }
   }
