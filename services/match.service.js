@@ -171,6 +171,7 @@ const checkWin = async (matchId) => {
     const i = Math.floor(history[history.length - 1] / boardSize);
     const j = history[history.length - 1] % boardSize;
     const winRaw = alogithmn(b, i, j);
+    let cupDataChange;
     if (winRaw) {
       //cập nhật trạng thái isReady=false cho 2 user
       await Room.findOneAndUpdate(
@@ -193,8 +194,8 @@ const checkWin = async (matchId) => {
             winner: match.players[0]._id,
           },
         });
-        updateUser(winner, match.players);
-        return { winRaw, winner };
+        cupDataChange = await updateUser(winner, match.players);
+        return { winRaw, winner, cupDataChange };
       } else {
         winner = match.players[1]._id;
         await match.update({
@@ -203,8 +204,8 @@ const checkWin = async (matchId) => {
             winner: match.players[1]._id,
           },
         });
-        updateUser(winner, match.players);
-        return { winRaw, winner };
+        cupDataChange = await updateUser(winner, match.players);
+        return { winRaw, winner, cupDataChange };
       }
     }
     return false;
@@ -232,7 +233,7 @@ const updateUser = async (winner, players) => {
         matchHavePlayed: players[1].matchHavePlayed + 1,
       })
     ])
-
+    return [p1Offer.plusCup, p2Offer.subCup]//[cúp cộng, cúp trừ]
   } else {
     await Promise.all([
       User.findOneAndUpdate({ _id: players[0]._id }, {
@@ -245,7 +246,9 @@ const updateUser = async (winner, players) => {
         matchHaveWon: players[1].matchHaveWon + 1
       })
     ])
+    return [p2Offer.plusCup, p1Offer.subCup];//[cúp cộng, cúp trừ]
   }
+
 }
 
 const endMatch = async (matchId, loserId) => {

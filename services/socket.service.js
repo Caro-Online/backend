@@ -159,7 +159,7 @@ const listenToJoinEvent = (socket, io) => {
       // Lấy match
       const match = await matchService.getMatchByMatchId(matchId);
       if (check) {
-        io.in(user.currentRoom).emit('have-winner', { updatedMatch: match });
+        io.in(user.currentRoom).emit('have-winner', { updatedMatch: match, cupDataChange: check.cupDataChange });
       } else {
         socket.broadcast
           .to(user.currentRoom)
