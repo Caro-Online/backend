@@ -181,7 +181,7 @@ const listenToJoinEvent = (socket, io) => {
         console.log('all ready');
         const match = await matchService.createMatch(
           [room.players[0].user, room.players[1].user],
-          room._id
+          room
         );
         io.in(user.currentRoom).emit('match-start-update', {
           //update match
