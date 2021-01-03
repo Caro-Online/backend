@@ -2,12 +2,11 @@ const cryptoRandomString = require('crypto-random-string');
 const httpStatus = require('http-status');
 const moment = require('moment');
 const roomService = require('./room.service');
-
-const { Match, Room } = require('../models');
+const { Match, Room, User } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 const getMatchByMatchId = async (matchId) => {
-  const match = await Match.findById(matchId);
+  const match = await Match.findById(matchId).populate('players');
   if (!match) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
@@ -183,29 +182,71 @@ const checkWin = async (matchId) => {
           },
         }
       );
+      let winner;
       //cập nhật win raw và winner
       if (history.length % 2 === 1) {
         //số lẻ là X=> người chơi 1 win
+        winner = match.players[0]._id;
         await match.update({
           $set: {
             winRaw: winRaw,
-            winner: match.players[0],
+            winner: match.players[0]._id,
           },
         });
-        return { winRaw, winner: match.players[0] };
+        updateUser(winner, match.players);
+        return { winRaw, winner };
       } else {
+        winner = match.players[1]._id;
         await match.update({
           $set: {
             winRaw: winRaw,
-            winner: match.players[1],
+            winner: match.players[1]._id,
           },
         });
-        return { winRaw, winner: match.players[1] };
+        updateUser(winner, match.players);
+        return { winRaw, winner };
       }
     }
     return false;
   }
 };
+
+const updateUser = async (winner, players) => {
+  console.log("update cup")
+  //Tính số cúp thưởng và phạt theo cúp hiện tại và chênh lệch cup
+  const diffCup = players[0].cup - players[1].cup;
+  const p1Offer = await getCupOffer(players[0].cup, diffCup);
+  const p2Offer = await getCupOffer(players[1].cup, diffCup);
+  console.log(p1Offer);
+  console.log(p2Offer);
+  console.log(winner)
+  if (players[0]._id === winner) {
+    await Promise.all([
+      User.findOneAndUpdate({ _id: players[0]._id }, {
+        cup: players[0].cup + p1Offer.plusCup,
+        matchHavePlayed: players[0].matchHavePlayed + 1,
+        matchHaveWon: players[0].matchHaveWon + 1
+      }),
+      User.findOneAndUpdate({ _id: players[1]._id }, {
+        cup: players[1].cup - p2Offer.subCup,
+        matchHavePlayed: players[1].matchHavePlayed + 1,
+      })
+    ])
+
+  } else {
+    await Promise.all([
+      User.findOneAndUpdate({ _id: players[0]._id }, {
+        cup: players[0].cup - p1Offer.subCup,
+        matchHavePlayed: players[0].matchHavePlayed + 1
+      }),
+      User.findOneAndUpdate({ _id: players[1]._id }, {
+        cup: players[1].cup + p2Offer.plusCup,
+        matchHavePlayed: players[1].matchHavePlayed + 1,
+        matchHaveWon: players[1].matchHaveWon + 1
+      })
+    ])
+  }
+}
 
 const endMatch = async (matchId, loserId) => {
   const match = await getMatchByMatchId(matchId);
@@ -221,6 +262,32 @@ const endMatch = async (matchId, loserId) => {
   match.save();
   return match;
 };
+
+const getCupOffer = (currentCup, differenceCup) => {
+  let plusCup = 20;
+  let subCup = 20;
+  const differenceLevel = Math.floor(differenceCup / 100);
+  if (Math.abs(differenceLevel) < 5) {//xét lệch dưới 4 cấp
+    //Thưởng Giảm 2 cúp nếu hơn 1 level, tăng 2 cúp nếu thua 1 level
+    plusCup -= differenceLevel * 2;
+    //Phạt Tăng 2 cúp nếu hơn 1 level, giảm 2 cúp nếu thua 1 level
+    subCup += differenceLevel * 2;
+  } else {//lệch trên 4 cấp 
+    if (differenceLevel < 0) {//nếu hơn cúp
+      plusCup = 10; subCup = 30;
+    } else if (differenceLevel < 0) {//nếu thua cúp
+      plusCup = 30; subCup = 10;
+    }
+  }
+  //Thưởng và phạt theo chế độ dưới 100 cúp
+  if (currentCup < 100) {
+    plusCup += 5;
+    subCup = Math.floor(currentCup / 10)
+  }
+  return { plusCup, subCup }
+}
+
+
 
 module.exports = {
   createMatch,
