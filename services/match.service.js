@@ -254,16 +254,18 @@ const updateUser = async (winner, players) => {
 const endMatch = async (matchId, loserId) => {
   const match = await getMatchByMatchId(matchId);
   // Tìm ra người chiến thắng
-  const winnerId = match.players.filter(
+  const winner = match.players.filter(
     (player) => player._id.toString() !== loserId.toString()
   )[0];
   // Set winner
-  match.winner = winnerId;
+  match.winner = winner._id;
   // Reset timeExp
   const date = new Date(Date.now() + 20 * 1000);
   match.timeExp = moment.utc(date).format();
-  match.save();
-  return match;
+  await match.save();
+  const cupDataChange = await updateUser(winner._id, match.players);
+  return { match, cupDataChange };
+  //udpate cup,matchhavewin,matchplayed
 };
 
 const getCupOffer = (currentCup, differenceCup) => {
