@@ -153,11 +153,9 @@ const listenToJoinEvent = (socket, io) => {
       // // Emit sự kiện match-start cho tất cả các client trong phòng để lắng nghe sự kiện receive-move
       // io.in(user.currentRoom).emit('match-start', { matchId });
     });
-    socket.on('send-move', async ({ matchId }) => {
+    socket.on('send-move', async ({ match }) => {
       // Kiểm tra thắng thua
-      const check = await matchService.checkWin(matchId);
-      // Lấy match
-      const match = await matchService.getMatchByMatchId(matchId);
+      const check = await matchService.checkWin(match);
       if (check) {
         io.in(user.currentRoom).emit('have-winner', { updatedMatch: match });
       } else {

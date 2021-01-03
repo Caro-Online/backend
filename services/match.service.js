@@ -162,91 +162,99 @@ const alogithmn = (b, i, j) => {
 };
 
 //checkWin
-const checkWin = async (matchId) => {
-  const match = await getMatchByMatchId(matchId);
-  if (match) {
-    //move= i*boardSize+j
-    const { history } = match;
-    const b = historyTo2DArray(history);
-    const i = Math.floor(history[history.length - 1] / boardSize);
-    const j = history[history.length - 1] % boardSize;
-    const winRaw = alogithmn(b, i, j);
-    if (winRaw) {
-      //cập nhật trạng thái isReady=false cho 2 user
-      await Room.findOneAndUpdate(
-        { _id: match.room },
-        {
-          $set: {
-            'players.$[].isReady': false,
-            status: 'WAITING',
-          },
-        }
-      );
-      let winner;
-      //cập nhật win raw và winner
-      if (history.length % 2 === 1) {
-        //số lẻ là X=> người chơi 1 win
-        winner = match.players[0]._id;
-        await match.update({
-          $set: {
-            winRaw: winRaw,
-            winner: match.players[0]._id,
-          },
-        });
-        updateUser(winner, match.players);
-        return { winRaw, winner };
-      } else {
-        winner = match.players[1]._id;
-        await match.update({
-          $set: {
-            winRaw: winRaw,
-            winner: match.players[1]._id,
-          },
-        });
-        updateUser(winner, match.players);
-        return { winRaw, winner };
+const checkWin = async (match) => {
+  //move= i*boardSize+j
+  const { history } = match;
+  const b = historyTo2DArray(history);
+  const i = Math.floor(history[history.length - 1] / boardSize);
+  const j = history[history.length - 1] % boardSize;
+  const winRaw = alogithmn(b, i, j);
+  if (winRaw) {
+    //cập nhật trạng thái isReady=false cho 2 user
+    await Room.findOneAndUpdate(
+      { _id: match.room },
+      {
+        $set: {
+          'players.$[].isReady': false,
+          status: 'WAITING',
+        },
       }
+    );
+    let winner;
+    //cập nhật win raw và winner
+    if (history.length % 2 === 1) {
+      //số lẻ là X=> người chơi 1 win
+      winner = match.players[0]._id;
+      await match.update({
+        $set: {
+          winRaw: winRaw,
+          winner: match.players[0]._id,
+        },
+      });
+      updateUser(winner, match.players);
+      return { winRaw, winner };
+    } else {
+      winner = match.players[1]._id;
+      await match.update({
+        $set: {
+          winRaw: winRaw,
+          winner: match.players[1]._id,
+        },
+      });
+      updateUser(winner, match.players);
+      return { winRaw, winner };
     }
-    return false;
   }
+  return false;
 };
 
 const updateUser = async (winner, players) => {
-  console.log("update cup")
+  console.log('update cup');
   //Tính số cúp thưởng và phạt theo cúp hiện tại và chênh lệch cup
   const diffCup = players[0].cup - players[1].cup;
   const p1Offer = await getCupOffer(players[0].cup, diffCup);
   const p2Offer = await getCupOffer(players[1].cup, diffCup);
   console.log(p1Offer);
   console.log(p2Offer);
-  console.log(winner)
+  console.log(winner);
   if (players[0]._id === winner) {
     await Promise.all([
-      User.findOneAndUpdate({ _id: players[0]._id }, {
-        cup: players[0].cup + p1Offer.plusCup,
-        matchHavePlayed: players[0].matchHavePlayed + 1,
-        matchHaveWon: players[0].matchHaveWon + 1
-      }),
-      User.findOneAndUpdate({ _id: players[1]._id }, {
-        cup: players[1].cup - p2Offer.subCup,
-        matchHavePlayed: players[1].matchHavePlayed + 1,
-      })
-    ])
-
+      User.findOneAndUpdate(
+        { _id: players[0]._id },
+        {
+          cup: players[0].cup + p1Offer.plusCup,
+          matchHavePlayed: players[0].matchHavePlayed + 1,
+          matchHaveWon: players[0].matchHaveWon + 1,
+        }
+      ),
+      User.findOneAndUpdate(
+        { _id: players[1]._id },
+        {
+          cup: players[1].cup - p2Offer.subCup,
+          matchHavePlayed: players[1].matchHavePlayed + 1,
+        }
+      ),
+    ]);
   } else {
     await Promise.all([
-      User.findOneAndUpdate({ _id: players[0]._id }, {
-        cup: players[0].cup - p1Offer.subCup,
-        matchHavePlayed: players[0].matchHavePlayed + 1
-      }),
-      User.findOneAndUpdate({ _id: players[1]._id }, {
-        cup: players[1].cup + p2Offer.plusCup,
-        matchHavePlayed: players[1].matchHavePlayed + 1,
-        matchHaveWon: players[1].matchHaveWon + 1
-      })
-    ])
+      User.findOneAndUpdate(
+        { _id: players[0]._id },
+        {
+          cup: players[0].cup - p1Offer.subCup,
+          matchHavePlayed: players[0].matchHavePlayed + 1,
+        }
+      ),
+      User.findOneAndUpdate(
+        { _id: players[1]._id },
+        {
+          cup: players[1].cup + p2Offer.plusCup,
+          matchHavePlayed: players[1].matchHavePlayed + 1,
+          matchHaveWon: players[1].matchHaveWon + 1,
+        }
+      ),
+    ]);
   }
-}
+};
 
 const endMatch = async (matchId, loserId) => {
   const match = await getMatchByMatchId(matchId);
@@ -267,27 +275,31 @@ const getCupOffer = (currentCup, differenceCup) => {
   let plusCup = 20;
   let subCup = 20;
   const differenceLevel = Math.floor(differenceCup / 100);
-  if (Math.abs(differenceLevel) < 5) {//xét lệch dưới 4 cấp
+  if (Math.abs(differenceLevel) < 5) {
+    //xét lệch dưới 4 cấp
     //Thưởng Giảm 2 cúp nếu hơn 1 level, tăng 2 cúp nếu thua 1 level
     plusCup -= differenceLevel * 2;
     //Phạt Tăng 2 cúp nếu hơn 1 level, giảm 2 cúp nếu thua 1 level
     subCup += differenceLevel * 2;
-  } else {//lệch trên 4 cấp 
-    if (differenceLevel < 0) {//nếu hơn cúp
-      plusCup = 10; subCup = 30;
-    } else if (differenceLevel < 0) {//nếu thua cúp
-      plusCup = 30; subCup = 10;
+  } else {
+    //lệch trên 4 cấp
+    if (differenceLevel < 0) {
+      //nếu hơn cúp
+      plusCup = 10;
+      subCup = 30;
+    } else if (differenceLevel < 0) {
+      //nếu thua cúp
+      plusCup = 30;
+      subCup = 10;
     }
   }
   //Thưởng và phạt theo chế độ dưới 100 cúp
   if (currentCup < 100) {
     plusCup += 5;
-    subCup = Math.floor(currentCup / 10)
+    subCup = Math.floor(currentCup / 10);
   }
-  return { plusCup, subCup }
-}
-
-
+  return { plusCup, subCup };
+};
 
 module.exports = {
   createMatch,
