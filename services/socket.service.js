@@ -154,9 +154,9 @@ const listenToJoinEvent = (socket, io) => {
       // // Emit sự kiện match-start cho tất cả các client trong phòng để lắng nghe sự kiện receive-move
       // io.in(user.currentRoom).emit('match-start', { matchId });
     });
-    socket.on('send-move', async ({ match }) => {
+    socket.on('send-move', async ({ match, rule }) => {
       // Kiểm tra thắng thua
-      const check = await matchService.checkWin(match._id, match);
+      const check = await matchService.checkWin(match, rule);
       if (check) {
         const date = new Date(Date.now() + room.countdownDuration * 1000);
         const timeExp = moment.utc(date).format();

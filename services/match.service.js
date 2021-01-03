@@ -79,7 +79,7 @@ const boardSize = 17;
 const create2DArray = () => {
   let array = Array(boardSize);
   for (let i = 0; i < boardSize; i++) {
-    array[i] = Array(boardSize).fill('null');
+    array[i] = Array(boardSize).fill(null);
   }
   return array;
 };
@@ -95,33 +95,44 @@ const historyTo2DArray = (history) => {
 
   return array;
 };
-
-const alogithmn = (b, i, j) => {
+//không chặn 2 đầu
+const rule2Check = (b, i, j) => {
   let d = Array();
-  let k = i;
+  let k;
   let h;
   // kiểm tra hàng
+  k = i;
   while (b[k][j] === b[i][j]) {
     d.push(k * boardSize + j);
-    k++;
+    if (k < boardSize - 1) k++;
+    else break;
   }
-  k = i - 1;
-  while (b[k][j] === b[i][j]) {
-    d.push(k * boardSize + j);
-    k--;
+
+  if (i > 0) {
+    h = i - 1;
+    while (b[h][j] === b[i][j]) {
+      d.push(h * boardSize + j);
+      if (h > 0) h--;
+      else break;
+    }
   }
   if (d.length > 4) return d;
   d = Array();
-  h = j;
+  k = j;
   // kiểm tra cột
-  while (b[i][h] === b[i][j]) {
+  while (b[i][k] === b[i][j]) {
     d.push(i * boardSize + h);
-    h++;
+    if (k < boardSize - 1) k++;
+    else break;
   }
-  h = j - 1;
-  while (b[i][h] === b[i][j]) {
-    d.push(i * boardSize + h);
-    h--;
+
+  if (j > 0) {
+    h = j - 1;
+    while (b[i][h] === b[i][j]) {
+      d.push(i * boardSize + h);
+      if (h > 0) h--;
+      else break;
+    }
   }
   if (d.length > 4) return d;
   // kiểm tra đường chéo 1
@@ -130,48 +141,172 @@ const alogithmn = (b, i, j) => {
   d = Array();
   while (b[i][j] === b[h][k]) {
     d.push(h * boardSize + k);
-    h++;
-    k++;
+    if (h < boardSize - 1 && k < boardSize - 1) {
+      h++;
+      k++;
+    } else break;
   }
-  h = i - 1;
-  k = j - 1;
-  while (b[i][j] === b[h][k]) {
-    d.push(h * boardSize + k);
-    h--;
-    k--;
+  if (i > 0 && j > 0) {
+    h = i - 1;
+    k = j - 1;
+    while (b[i][j] === b[h][k]) {
+      d.push(h * boardSize + k);
+      if (h > 0 && k > 0) {
+        h--;
+        k--;
+      } else break
+    }
   }
   if (d.length > 4) return d;
+
   // kiểm tra đường chéo 2
   h = i;
   k = j;
   d = Array();
   while (b[i][j] === b[h][k]) {
     d.push(h * boardSize + k);
-    h++;
-    k--;
+    if (h < boardSize - 1 && k > 0) {
+      h++;
+      k--;
+    } else break
   }
-  h = i - 1;
-  k = j + 1;
-  while (b[i][j] === b[h][k]) {
-    d.push(h * boardSize + k);
-    h--;
-    k++;
+
+  if (i > 0 && j < boardSize - 1) {
+    h = i - 1;
+    k = j + 1;
+    while (b[i][j] === b[h][k]) {
+      d.push(h * boardSize + k);
+      if (h > 0 && k < boardSize - 1) {
+        h--;
+        k++;
+      } else break;
+
+    }
   }
   if (d.length > 4) return d;
   // nếu không đương chéo nào thỏa mãn thì trả về false.
   return null;
 };
 
+//chặn 2 đầu
+
+const rule1Check = (b, i, j) => {
+  let d = Array();
+  let k;
+  let h;
+  let op = 0;// số đầu bị chặn
+  // kiểm tra hàng
+  k = i;
+  while (b[k][j] === b[i][j]) {
+    d.push(k * boardSize + j);
+    if (k < boardSize - 1) k++;
+    else break;
+  }
+  if (b[k][j] !== null || k === boardSize - 1) op++;
+  if (i > 0) {
+    k = i - 1;
+    while (b[k][j] === b[i][j]) {
+      d.push(k * boardSize + j);
+      if (k > 0) k--;
+      else break;
+    }
+  }
+  if (b[k][j] !== null || k === 0) op++;
+  if (d.length > 5 || (d.length === 5 && op < 2)) return d;
+  d = Array();
+  k = j;
+  op = 0;
+  // kiểm tra cột
+  while (b[i][k] === b[i][j]) {
+    d.push(i * boardSize + h);
+    if (k < boardSize - 1) k++;
+    else break;
+  }
+  if (b[i][k] !== null || k === boardSize - 1) op++;
+
+  if (j > 0) {
+    h = j - 1;
+    while (b[i][h] === b[i][j]) {
+      d.push(i * boardSize + h);
+      if (h > 0) h--;
+      else break;
+    }
+  }
+  if (b[i][h] !== null || h === 0) op++;
+  if (d.length > 5 || (d.length === 5 && op < 2)) return d;
+  // kiểm tra đường chéo 1
+  h = i;
+  k = j;
+  d = Array();
+  op = 0;
+  while (b[i][j] === b[h][k]) {
+    d.push(h * boardSize + k);
+    if (h < boardSize - 1 && k < boardSize - 1) {
+      h++;
+      k++;
+    } else break;
+  }
+  if (b[h][k] !== null || h === boardSize - 1 || k === boardSize - 1) op++;
+  if (i > 0 && j > 0) {
+    h = i - 1;
+    k = j - 1;
+    while (b[i][j] === b[h][k]) {
+      d.push(h * boardSize + k);
+      if (h > 0 && k > 0) {
+        h--;
+        k--;
+      } else break
+    }
+  }
+  if (b[h][k] !== null || h === 0 || k === 0) op++;
+  if (d.length > 5 || (d.length === 5 && op < 2)) return d;
+
+  // kiểm tra đường chéo 2
+  h = i;
+  k = j;
+  d = Array();
+  op = 0;
+  while (b[i][j] === b[h][k]) {
+    d.push(h * boardSize + k);
+    if (h < boardSize - 1 && k > 0) {
+      h++;
+      k--;
+    } else break
+  }
+  if (b[h][k] !== null || h === boardSize - 1 || k === 0) op++;
+
+  if (i > 0 && j < boardSize - 1) {
+    h = i - 1;
+    k = j + 1;
+    while (b[i][j] === b[h][k]) {
+      d.push(h * boardSize + k);
+      if (h > 0 && k < boardSize - 1) {
+        h--;
+        k++;
+      } else break;
+    }
+  }
+  if (b[h][k] !== null || h === 0 || k === boardSize - 1) op++;
+  if (d.length > 5 || (d.length === 5 && op < 2)) return d;
+  // nếu không đương chéo nào thỏa mãn thì trả về false.
+  return null;
+};
+
 //checkWin
-const checkWin = async (matchId, updatedMatch) => {
-  const match = await getMatchByMatchId(matchId);
+const checkWin = async (updatedMatch, rule) => {
+  const match = await getMatchByMatchId(updatedMatch._id);
   //move= i*boardSize+j
   const { history } = updatedMatch;
   const b = historyTo2DArray(history);
   const i = Math.floor(history[history.length - 1] / boardSize);
   const j = history[history.length - 1] % boardSize;
-  const winRaw = alogithmn(b, i, j);
-  let cupDataChange;
+  //checkwin 
+  let winRaw
+  if (rule) {
+    winRaw = rule1Check(b, i, j);
+  } else {
+    winRaw = rule2Check(b, i, j);
+  }
   if (winRaw) {
     //cập nhật trạng thái isReady=false cho 2 user
     await Room.findOneAndUpdate(
