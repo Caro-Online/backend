@@ -6,6 +6,9 @@ const { emitRoomData } = require('../../services/socket.service');
 
 const getAllRoom = catchAsync(async (req, res) => {
   const rooms = await roomService.getAllRoom();
+  if (!rooms || rooms.length === 0) {
+    res.status(httpStatus.OK).json({ success: true, rooms: [] });
+  }
   res.status(httpStatus.OK).json({ success: true, rooms });
 });
 const getRandomRoom = catchAsync(async (req, res) => {
@@ -26,7 +29,13 @@ const getRoomDetail = catchAsync(async (req, res) => {
 
 const createRoom = catchAsync(async (req, res) => {
   const { name, userId, rule, roomPassword, countdownDuration } = req.body;
-  const room = await roomService.createRoom(name, userId, rule, roomPassword,countdownDuration);
+  const room = await roomService.createRoom(
+    name,
+    userId,
+    rule,
+    roomPassword,
+    countdownDuration
+  );
   socketService.emitNewRoom(room);
   res.status(httpStatus.OK).json({ success: true, room });
 });
@@ -64,6 +73,7 @@ const updateRoomStatus = catchAsync(async (req, res) => {
   const { roomId } = req.params;
   const { status } = req.body;
   const room = await roomService.updateRoomStatus(roomId, status);
+  socketService.emitRoomUpdate(room);
   if (room) {
     res.status(httpStatus.OK).json({ success: true, room });
   } else {

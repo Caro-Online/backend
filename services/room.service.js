@@ -7,10 +7,7 @@ const ApiError = require('../utils/ApiError');
 const matchService = require('./match.service');
 
 const getAllRoom = async () => {
-  const rooms = await Room.find({});
-  if (!rooms || rooms.length === 0) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Không thể tìm thấy phòng nào!');
-  }
+  const rooms = await Room.find({ status: { $ne: 'EMPTY' } });
   return rooms;
 };
 const getRandom = async () => {
@@ -72,14 +69,20 @@ const createRoom = (name, userId, rule, roomPassword, countdownDuration) => {
 
 const joinRoom = async (userId, roomId) => {
   const filter = { roomId: roomId };
-  const room = await Room.findOne(filter);
+  const room = await getRoomByRoomId(roomId);
   if (!room) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
       'Không thể tìm thấy phòng tương ứng!'
     );
   }
-  const update = { $addToSet: { audiences: userId } };
+  let update;
+  // Nếu trạng thái phòng là empty thì set lại trạng thái phòng là waiting
+  if (room.status === 'EMPTY') {
+    update = { $addToSet: { audiences: userId }, status: 'WAITING' };
+  } else {
+    update = { $addToSet: { audiences: userId } };
+  }
   return Room.findOneAndUpdate(filter, update, { new: true })
     .populate({ path: 'chat', populate: { path: 'user' } })
     .populate('audiences')
@@ -112,6 +115,7 @@ const outRoom = async (userId, roomId) => {
         updatedPlayers = room.players.filter(
           (player) => player.user._id.toString() !== userId.toString()
         );
+
         room.players = updatedPlayers;
       }
     }
@@ -154,7 +158,10 @@ const joinPlayerQueue = async (userId, roomId) => {
 
 const updateRoomStatus = (roomId, status) => {
   console.log(roomId + status);
-  return Room.findOneAndUpdate({ roomId }, { status }, { new: true });
+  return Room.findOneAndUpdate({ roomId }, { status }, { new: true })
+    .populate({ path: 'chat', populate: { path: 'user' } })
+    .populate('audiences')
+    .populate('players.user');
 };
 
 const updatePlayerIsReady = async (roomId, userId, isReady) => {
@@ -166,7 +173,10 @@ const updatePlayerIsReady = async (roomId, userId, isReady) => {
       },
     },
     { new: true }
-  ).populate('players.user');
+  )
+    .populate({ path: 'chat', populate: { path: 'user' } })
+    .populate('audiences')
+    .populate('players.user');
 };
 
 const updateRoomWhenPlayerNotReady = async (roomId, userId) => {

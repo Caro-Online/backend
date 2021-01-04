@@ -264,6 +264,8 @@ const listenToDisconnectEvent = (io, socket, userId) => {
         userName: 'admin',
         text: `${user.name} đã rời phòng.`,
       });
+      // Thông báo đến tất cả các client để update room bên rooms
+      emitRoomUpdate(room);
       // Emit lại thông tin phòng
       io.to(user.currentRoom).emit('roomData', {
         room: room,
@@ -289,6 +291,8 @@ const listenToLeaveRoomEvent = (io, socket) => {
       userName: 'admin',
       text: `${user.name} đã rời phòng.`,
     });
+    // Thông báo đến tất cả các client để update room bên rooms
+    emitRoomUpdate(room);
     // Emit lại thông tin phòng
     io.to(user.currentRoom).emit('room-data', {
       room: room,
