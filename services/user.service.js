@@ -1,15 +1,15 @@
-const httpStatus = require("http-status");
-const bcrypt = require("bcryptjs");
-const cryptoRandomString = require("crypto-random-string");
-const { v4: uuidv4 } = require("uuid");
+const httpStatus = require('http-status');
+const bcrypt = require('bcryptjs');
+const cryptoRandomString = require('crypto-random-string');
+const { v4: uuidv4 } = require('uuid');
 
-const { User } = require("../models");
-const ApiError = require("../utils/ApiError");
-const tokenService = require("./token.service");
+const { User } = require('../models');
+const ApiError = require('../utils/ApiError');
+const tokenService = require('./token.service');
 
 const createUser = async (userBody) => {
   if (await User.isEmailTaken(userBody.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Email đã có người sử dụng");
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Email đã có người sử dụng');
   }
   const { password } = userBody;
 
@@ -39,7 +39,7 @@ const processUserLoginFacebookGoogle = async (name, email, imageUrl) => {
     user = await createUser({
       name,
       email,
-      password: cryptoRandomString({ length: 10, type: "base64" }),
+      password: cryptoRandomString({ length: 10, type: 'base64' }),
       imageUrl,
     });
   }
@@ -52,14 +52,14 @@ const getUserByEmail = async (email, isAdmin = false) => {
   if (!user) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      "Không thể tìm thấy user tương ứng!"
+      'Không thể tìm thấy user tương ứng!'
     );
   }
   return user;
 };
 
 const getAdminByEmail = (email) => {
-  return User.findOne({ email: email, role: "Admin" });
+  return User.findOne({ email: email, role: 'Admin' });
 };
 
 const getUserById = async (id) => {
@@ -67,7 +67,7 @@ const getUserById = async (id) => {
   if (!user) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      "Không thể tìm thấy user tương ứng!"
+      'Không thể tìm thấy user tương ứng!'
     );
   }
   return user;
@@ -75,29 +75,29 @@ const getUserById = async (id) => {
 
 const getAllUser = async (req) => {
   // console.log("search", req);
-  let keyword = "";
+  let keyword = '';
   let filters = {};
   const query = req.query;
   if (query) {
-    keyword = query.keyword || "";
+    keyword = query.keyword || '';
     filters = {
       $or: [
         {
           name: {
             $regex: keyword,
-            $options: "mi",
+            $options: 'mi',
           },
         },
         {
           email: {
             $regex: keyword,
-            $options: "mi",
+            $options: 'mi',
           },
         },
         {
           phone: {
             $regex: keyword,
-            $options: "mi",
+            $options: 'mi',
           },
         },
       ],
@@ -109,7 +109,7 @@ const getAllUser = async (req) => {
 
 const search = async (req) => {
   // console.log("search", req);
-  let keyword = "";
+  let keyword = '';
   const query = req.query;
   if (query) {
     keyword = query.keyword;
@@ -119,19 +119,19 @@ const search = async (req) => {
       {
         name: {
           $regex: keyword,
-          $options: "mi",
+          $options: 'mi',
         },
       },
       {
         email: {
           $regex: keyword,
-          $options: "mi",
+          $options: 'mi',
         },
       },
       {
         phone: {
           $regex: keyword,
-          $options: "mi",
+          $options: 'mi',
         },
       },
     ],
@@ -147,7 +147,7 @@ const getRanking = async () => {
     cup: -1,
   });
   if (!users || users.length === 0) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Không thể tìm thấy user nào!");
+    throw new ApiError(httpStatus.NOT_FOUND, 'Không thể tìm thấy user nào!');
   }
   return users;
 };
@@ -155,15 +155,15 @@ const getRanking = async () => {
 const getUserWithResetToken = async (resetToken) => {
   const user = await User.findOne(
     {
-      resetToken,
-      resetTokenExpiration: { $gt: Date.now() },
+      resetPasswordToken: resetToken,
+      resetPasswordTokenExpiration: { $gt: Date.now() },
     },
     { __v: 0, password: 0 }
   );
   if (!user) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      "Không thể tìm thấy user tương ứng!"
+      'Không thể tìm thấy user tương ứng!'
     );
   }
   return user;
@@ -176,7 +176,7 @@ const processConfirmRegistration = async (emailVerifyToken) => {
   if (!user) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      "Không thể tìm thấy user tương ứng!"
+      'Không thể tìm thấy user tương ứng!'
     );
   }
   user.emailVerifyToken = undefined;
@@ -188,8 +188,8 @@ const processConfirmRegistration = async (emailVerifyToken) => {
 const getUserWithResetTokenAndUserId = async (resetToken, userId) => {
   const user = await User.findOne(
     {
-      resetToken,
-      resetTokenExpiration: { $gt: Date.now() },
+      resetPasswordToken: resetToken,
+      resetPasswordTokenExpiration: { $gt: Date.now() },
       _id: userId,
     },
     { __v: 0, password: 0 }
@@ -197,7 +197,7 @@ const getUserWithResetTokenAndUserId = async (resetToken, userId) => {
   if (!user) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      "Không thể tìm thấy user tương ứng hoặc resetToken đã hết hạn!"
+      'Không thể tìm thấy user tương ứng hoặc resetToken đã hết hạn!'
     );
   }
   return user;
@@ -210,16 +210,16 @@ const updateCurrentRoom = async (userId, roomId) => {
 };
 
 const updateStatusToOnline = (user) => {
-  user.status = "ONLINE";
+  user.status = 'ONLINE';
   return user.save();
 };
 const update = (user) => {
   return user.save();
 };
 
-const initResetToken = (user) => {
-  user.resetToken = resetToken;
-  user.resetTokenExpiration = Date.now() + 5 * 36000000; // Sau 5h không đổi mật khẩu sẽ timeout
+const initResetToken = (user, resetToken) => {
+  user.resetPasswordToken = resetToken;
+  user.resetPasswordTokenExpiration = Date.now() + 5 * 36000000; // Sau 5h không đổi mật khẩu sẽ timeout
   return user.save();
 };
 

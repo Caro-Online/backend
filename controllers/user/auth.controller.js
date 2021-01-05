@@ -114,7 +114,7 @@ const sendResetPasswordEmail = catchAsync(async (req, res) => {
   // Tìm user
   const user = await userService.getUserByEmail(email);
 
-  userService.initResetToken(user);
+  userService.initResetToken(user,resetToken);
 
   //Send mail
   mailService.sendResetPasswordEmail(resetToken, email);
