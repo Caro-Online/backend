@@ -7,10 +7,11 @@ const { emitRoomData } = require('../../services/socket.service');
 const getAllRoom = catchAsync(async (req, res) => {
   const rooms = await roomService.getAllRoom();
   if (!rooms || rooms.length === 0) {
-    res.status(httpStatus.OK).json({ success: true, rooms: [] });
+    return res.status(httpStatus.OK).json({ success: true, rooms: [] });
   }
-  res.status(httpStatus.OK).json({ success: true, rooms });
+  return res.status(httpStatus.OK).json({ success: true, rooms });
 });
+
 const getRandomRoom = catchAsync(async (req, res) => {
   const room = await roomService.getRandom();
   res.status(httpStatus.OK).json({ success: true, room });
@@ -21,6 +22,7 @@ const getRoom = catchAsync(async (req, res) => {
   const room = await roomService.getRoomByRoomId(roomId);
   res.status(httpStatus.OK).json({ success: true, room });
 });
+
 const getRoomDetail = catchAsync(async (req, res) => {
   const { id } = req.params;
   const room = await roomService.getRoomById(id);
@@ -47,6 +49,7 @@ const joinRoom = catchAsync(async (req, res) => {
   socketService.emitRoomUpdate(room);
   res.status(httpStatus.OK).json({ success: true, room });
 });
+
 const outRoom = catchAsync(async (req, res) => {
   const { userId } = req.body;
   const { roomId } = req.params;

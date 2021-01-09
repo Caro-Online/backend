@@ -13,7 +13,6 @@ const createMatch = catchAsync(async (req, res) => {
 const getCurrentMatchByIdOfRoom = catchAsync(async (req, res) => {
   const { roomId } = req.params;
   const match = await matchService.getCurrentMatchByIdOfRoom(roomId);
-  console.log(match);
   if (match.length === 0) {
     res
       .status(httpStatus.OK)

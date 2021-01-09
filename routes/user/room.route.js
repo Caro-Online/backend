@@ -1,7 +1,9 @@
 const express = require('express');
 const passport = require('passport');
 
+const validate = require('../../middlewares/validate.mdw');
 const roomController = require('../../controllers/user/room.controller');
+const roomValidation = require('../../validations/room.validation');
 
 require('../../config/passportJWT.config')(passport);
 
@@ -24,6 +26,7 @@ router.get(
 router.get(
   '/:roomId',
   passport.authenticate('jwt', { session: false }),
+  validate(roomValidation.getRoom),
   roomController.getRoom
 );
 
@@ -31,6 +34,7 @@ router.get(
 router.get(
   '/:id/detail',
   passport.authenticate('jwt', { session: false }),
+  validate(roomValidation.getRoomDetail),
   roomController.getRoomDetail
 );
 
@@ -38,6 +42,7 @@ router.get(
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
+  validate(roomValidation.createRoom),
   roomController.createRoom
 );
 
@@ -45,6 +50,7 @@ router.post(
 router.put(
   '/:roomId/join',
   passport.authenticate('jwt', { session: false }),
+  validate(roomValidation.joinRoom),
   roomController.joinRoom
 );
 
@@ -52,6 +58,7 @@ router.put(
 router.put(
   '/:roomId/join-player-queue',
   passport.authenticate('jwt', { session: false }),
+  validate(roomValidation.joinPlayerQueue),
   roomController.joinPlayerQueue
 );
 
@@ -59,6 +66,7 @@ router.put(
 router.put(
   '/:roomId/out',
   passport.authenticate('jwt', { session: false }),
+  validate(roomValidation.outRoom),
   roomController.outRoom
 );
 
@@ -66,6 +74,7 @@ router.put(
 router.put(
   '/:roomId/update-status',
   passport.authenticate('jwt', { session: false }),
+  validate(roomValidation.updateRoomStatus),
   roomController.updateRoomStatus
 );
 
@@ -73,6 +82,7 @@ router.put(
 router.put(
   '/:roomId/update-player-isready',
   passport.authenticate('jwt', { session: false }),
+  validate(roomValidation.updatePlayerIsReady),
   roomController.updatePlayerIsReady
 );
 
@@ -80,6 +90,7 @@ router.put(
 router.put(
   '/:roomId/player-ready',
   passport.authenticate('jwt', { session: false }),
+  validate(roomValidation.updateRoomWhenPlayerNotReady),
   roomController.updateRoomWhenPlayerNotReady
 );
 

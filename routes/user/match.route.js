@@ -1,6 +1,10 @@
 const express = require('express');
 const passport = require('passport');
+
+const validate = require('../../middlewares/validate.mdw');
 const matchController = require('../../controllers/user/match.controller');
+const matchValidation = require('../../validations/match.validation');
+const { endMatch } = require('../../services/match.service');
 
 require('../../config/passportJWT.config')(passport);
 
@@ -10,6 +14,7 @@ const router = express.Router();
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
+  validate(matchValidation.createMatch),
   matchController.createMatch
 );
 
@@ -24,8 +29,10 @@ router.get(
 router.get(
   '/room/:roomId',
   passport.authenticate('jwt', { session: false }),
+  validate(matchValidation.getCurrentMatchByIdOfRoom),
   matchController.getCurrentMatchByIdOfRoom
 );
+
 //Lấy danh sách các trận đấu của user by id
 router.get(
   '/user/:userId',
@@ -36,12 +43,14 @@ router.get(
 router.post(
   '/addmove',
   passport.authenticate('jwt', { session: false }),
+  validate(matchValidation.addMove),
   matchController.addMove
 );
 
 router.get(
   '/:matchId',
   passport.authenticate('jwt', { session: false }),
+  validate(matchValidation.getMatchById),
   matchController.getMatchById
 );
 
@@ -49,6 +58,7 @@ router.get(
 router.put(
   '/:matchId/end-match',
   passport.authenticate('jwt', { session: false }),
+  validate(matchValidation.endMatch),
   matchController.endMatch
 );
 

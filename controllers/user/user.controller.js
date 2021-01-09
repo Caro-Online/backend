@@ -1,7 +1,7 @@
-const httpStatus = require("http-status");
+const httpStatus = require('http-status');
 
-const catchAsync = require("../../utils/catchAsync");
-const { userService } = require("../../services");
+const catchAsync = require('../../utils/catchAsync');
+const { userService } = require('../../services');
 
 const getAllUser = catchAsync(async (req, res) => {
   const users = await userService.getAllUser(req);
@@ -24,6 +24,7 @@ const updateStatusToOnline = catchAsync(async (req, res) => {
   user = await userService.updateStatusToOnline(user);
   res.status(httpStatus.OK).json({ success: true, user });
 });
+
 const update = catchAsync(async (req, res) => {
   const userId = req.params.userId;
   const modifiedUser = req.body.user;
