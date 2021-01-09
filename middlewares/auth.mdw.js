@@ -15,16 +15,21 @@ const verifyCallback = (req, resolve, reject, requiredRoles) => async (
 
   req.user = user;
 
-  const { isAdmin } = await userService.getUserById(user.id);
-  if (requiredRoles === ROLES.USER) {
-    if (isAdmin) {
-      return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
-    }
-  } else if (requiredRoles === ROLES.ADMIN) {
-    if (!isAdmin) {
-      return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
+  console.log(requiredRoles);
+
+  if (requiredRoles) {
+    const { isAdmin } = await userService.getUserById(user.id);
+    if (requiredRoles === ROLES.USER) {
+      if (isAdmin) {
+        return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
+      }
+    } else if (requiredRoles === ROLES.ADMIN) {
+      if (!isAdmin) {
+        return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
+      }
     }
   }
+
   resolve();
 };
 

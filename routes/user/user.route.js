@@ -14,7 +14,7 @@ require('../../config/passportJWT.config')(passport);
 // Lấy danh sách các user
 router.get(
   '/',
-  passport.authenticate('jwt', { session: false }),
+  auth(),
   validate(userValidation.getAllUser),
   userController.getAllUser
 );
@@ -22,22 +22,17 @@ router.get(
 //Search User
 router.get(
   '/search',
-  passport.authenticate('jwt', { session: false }),
+  auth(),
   validate(userValidation.getSearch),
   userController.getSearch
 );
 
 //Lấy danh sách user được sắp xếp theo cup
-router.get(
-  '/rank',
-  passport.authenticate('jwt', { session: false }),
-  userController.getRanking
-);
+router.get('/rank', auth(ROLES.USER), userController.getRanking);
 
 //Update trạng thái của user
 router.put(
   '/:userId/update-status',
-  passport.authenticate('jwt', { session: false }),
   auth(ROLES.USER),
   validate(userValidation.updateStatusToOnline),
   userController.updateStatusToOnline
@@ -45,7 +40,7 @@ router.put(
 
 router.put(
   '/:userId',
-  passport.authenticate('jwt', { session: false }),
+  auth(),
   validate(userValidation.update),
   userController.update
 );
@@ -53,7 +48,7 @@ router.put(
 //Lấy thông tin của user theo id
 router.get(
   '/:userId',
-  passport.authenticate('jwt', { session: false }),
+  auth(),
   validate(userValidation.getUserById),
   userController.getUserById
 );

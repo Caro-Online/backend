@@ -15,37 +15,27 @@ const router = express.Router();
 //Tạo phòng chơi
 router.post(
   '/',
-  passport.authenticate('jwt', { session: false }),
   auth(ROLES.USER),
   validate(matchValidation.createMatch),
   matchController.createMatch
 );
 
 //Lấy danh sách các trận đấu theo query
-router.get(
-  '/',
-  passport.authenticate('jwt', { session: false }),
-  matchController.getMatchesHistory
-);
+router.get('/', auth(), matchController.getMatchesHistory);
 
 //Lấy trận hiện tại của id của phòng
 router.get(
   '/room/:roomId',
-  passport.authenticate('jwt', { session: false }),
+  auth(),
   validate(matchValidation.getCurrentMatchByIdOfRoom),
   matchController.getCurrentMatchByIdOfRoom
 );
 
 //Lấy danh sách các trận đấu của user by id
-router.get(
-  '/user/:userId',
-  passport.authenticate('jwt', { session: false }),
-  matchController.getMatchesHistoryByUserId
-);
+router.get('/user/:userId', auth(), matchController.getMatchesHistoryByUserId);
 
 router.post(
   '/addmove',
-  passport.authenticate('jwt', { session: false }),
   auth(ROLES.USER),
   validate(matchValidation.addMove),
   matchController.addMove
@@ -53,7 +43,7 @@ router.post(
 
 router.get(
   '/:matchId',
-  passport.authenticate('jwt', { session: false }),
+  auth(),
   validate(matchValidation.getMatchById),
   matchController.getMatchById
 );
@@ -61,7 +51,6 @@ router.get(
 // Kết thúc ván đấu do hết thời gian
 router.put(
   '/:matchId/end-match',
-  passport.authenticate('jwt', { session: false }),
   auth(ROLES.USER),
   validate(matchValidation.endMatch),
   matchController.endMatch
