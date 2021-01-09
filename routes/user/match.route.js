@@ -1,9 +1,11 @@
 const express = require('express');
 const passport = require('passport');
 
+const auth = require('../../middlewares/auth.mdw');
 const validate = require('../../middlewares/validate.mdw');
 const matchController = require('../../controllers/user/match.controller');
 const matchValidation = require('../../validations/match.validation');
+const { ROLES } = require('../../utils/constants');
 const { endMatch } = require('../../services/match.service');
 
 require('../../config/passportJWT.config')(passport);
@@ -14,6 +16,7 @@ const router = express.Router();
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
+  auth(ROLES.USER),
   validate(matchValidation.createMatch),
   matchController.createMatch
 );
@@ -43,6 +46,7 @@ router.get(
 router.post(
   '/addmove',
   passport.authenticate('jwt', { session: false }),
+  auth(ROLES.USER),
   validate(matchValidation.addMove),
   matchController.addMove
 );
@@ -58,6 +62,7 @@ router.get(
 router.put(
   '/:matchId/end-match',
   passport.authenticate('jwt', { session: false }),
+  auth(ROLES.USER),
   validate(matchValidation.endMatch),
   matchController.endMatch
 );

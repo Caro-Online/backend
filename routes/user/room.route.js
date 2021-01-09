@@ -1,9 +1,11 @@
 const express = require('express');
 const passport = require('passport');
 
+const auth = require('../../middlewares/auth.mdw');
 const validate = require('../../middlewares/validate.mdw');
 const roomController = require('../../controllers/user/room.controller');
 const roomValidation = require('../../validations/room.validation');
+const { ROLES } = require('../../utils/constants');
 
 require('../../config/passportJWT.config')(passport);
 
@@ -15,10 +17,12 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   roomController.getAllRoom
 );
+
 //Tìm nhanh phòng chơi
 router.get(
   '/random',
   passport.authenticate('jwt', { session: false }),
+  auth(ROLES.USER),
   roomController.getRandomRoom
 );
 
@@ -42,6 +46,7 @@ router.get(
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
+  auth(ROLES.USER),
   validate(roomValidation.createRoom),
   roomController.createRoom
 );
@@ -50,6 +55,7 @@ router.post(
 router.put(
   '/:roomId/join',
   passport.authenticate('jwt', { session: false }),
+  auth(ROLES.USER),
   validate(roomValidation.joinRoom),
   roomController.joinRoom
 );
@@ -58,6 +64,7 @@ router.put(
 router.put(
   '/:roomId/join-player-queue',
   passport.authenticate('jwt', { session: false }),
+  auth(ROLES.USER),
   validate(roomValidation.joinPlayerQueue),
   roomController.joinPlayerQueue
 );
@@ -66,6 +73,7 @@ router.put(
 router.put(
   '/:roomId/out',
   passport.authenticate('jwt', { session: false }),
+  auth(ROLES.USER),
   validate(roomValidation.outRoom),
   roomController.outRoom
 );
@@ -74,6 +82,7 @@ router.put(
 router.put(
   '/:roomId/update-status',
   passport.authenticate('jwt', { session: false }),
+  auth(ROLES.USER),
   validate(roomValidation.updateRoomStatus),
   roomController.updateRoomStatus
 );
@@ -82,6 +91,7 @@ router.put(
 router.put(
   '/:roomId/update-player-isready',
   passport.authenticate('jwt', { session: false }),
+  auth(ROLES.USER),
   validate(roomValidation.updatePlayerIsReady),
   roomController.updatePlayerIsReady
 );
@@ -90,6 +100,7 @@ router.put(
 router.put(
   '/:roomId/player-ready',
   passport.authenticate('jwt', { session: false }),
+  auth(ROLES.USER),
   validate(roomValidation.updateRoomWhenPlayerNotReady),
   roomController.updateRoomWhenPlayerNotReady
 );

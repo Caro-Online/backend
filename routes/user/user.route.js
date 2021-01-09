@@ -1,9 +1,11 @@
 const express = require('express');
 const passport = require('passport');
 
+const auth = require('../../middlewares/auth.mdw');
 const validate = require('../../middlewares/validate.mdw');
 const userController = require('../../controllers/user/user.controller');
 const userValidation = require('../../validations/user.validation');
+const { ROLES } = require('../../utils/constants');
 
 const router = express.Router();
 
@@ -36,6 +38,7 @@ router.get(
 router.put(
   '/:userId/update-status',
   passport.authenticate('jwt', { session: false }),
+  auth(ROLES.USER),
   validate(userValidation.updateStatusToOnline),
   userController.updateStatusToOnline
 );
