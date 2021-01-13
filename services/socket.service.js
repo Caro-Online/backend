@@ -119,22 +119,27 @@ const listenToJoinEvent = (socket, io) => {
       try {
         let room = await roomService.getRoomById(roomId);
         let updatedPlayers = room.players;
+        let isPlayerLeftRoom = false;
         const player1 = updatedPlayers[0];
         const player2 = updatedPlayers[1];
-        console.log(player1.user.currentRoom, player2.user.currentRoom);
         if (player1.user.currentRoom === null) {
+          isPlayerLeftRoom = true;
           updatedPlayers = updatedPlayers.filter(
             (player) =>
               player.user._id.toString() !== player1.user._id.toString()
           );
         }
         if (player2.user.currentRoom === null) {
+          isPlayerLeftRoom = true;
           updatedPlayers = updatedPlayers.filter(
             (player) =>
               player.user._id.toString() !== player2.user._id.toString()
           );
         }
         room.players = updatedPlayers;
+        if (isPlayerLeftRoom) {
+          room.status = 'WAITING';
+        }
         room.save();
         // Emit sự kiện cho tất cả các client trong phòng update lại
         io.to(room.roomId).emit('room-data', {
@@ -158,7 +163,7 @@ const listenToJoinEvent = (socket, io) => {
       // Kiểm tra thắng thua
       const check = await matchService.checkWin(match, rule);
       if (check) {
-        console.log(check)
+        console.log(check);
         const date = new Date(Date.now() + (room.countdownDuration + 1) * 1000);
         const timeExp = moment.utc(date).format();
         io.in(user.currentRoom).emit('have-winner', {
@@ -171,7 +176,7 @@ const listenToJoinEvent = (socket, io) => {
           cupDataChange: check.cupDataChange,
           matchPlayers: check.matchPlayers
         });
-        await matchService.updateFinnishMatch(check.winRaw, match)
+        await matchService.updateFinnishMatch(check.winRaw, match);
       } else {
         socket.broadcast
           .to(user.currentRoom)
@@ -193,12 +198,15 @@ const listenToJoinEvent = (socket, io) => {
         console.log('all ready');
         const match = await matchService.createMatch(
           [room.players[0].user, room.players[1].user],
-          room
+          room._id,
+          room.countdownDuration
         );
         io.in(user.currentRoom).emit('match-start-update', {
           //update match
           match: match,
         });
+        room.status = 'PLAYING';
+        await room.save();
         // io.in(user.currentRoom).emit('match-start', {
         //   //để init lại socket.on
         //   matchId: match._id,

@@ -18,18 +18,19 @@ const getMatchByMatchId = async (matchId) => {
   return match;
 };
 //roomId: _id
-const createMatch = async (players, room) => {
-  const date = new Date(Date.now() + (room.countdownDuration + 2) * 1000);
+const createMatch = async (players, roomId, countdownDuration) => {
+  console.log(countdownDuration);
+  const date = new Date(Date.now() + (countdownDuration + 2) * 1000);
   const timeExp = moment.utc(date).format();
   const match = new Match({
-    room: room._id,
+    room: roomId,
     players: players,
     history: [],
     winner: null,
     timeExp: timeExp,
   });
   await match.save();
-  return Match.populate(match, { path: "players" });
+  return Match.populate(match, { path: 'players' });
 };
 // Id of room = _id (khác với RoomId)
 //Trả về match tạo sau nhất theo createdAt
@@ -156,7 +157,7 @@ const rule2Check = (b, i, j) => {
       if (h > 0 && k > 0) {
         h--;
         k--;
-      } else break
+      } else break;
     }
   }
   if (d.length > 4) return d;
@@ -170,7 +171,7 @@ const rule2Check = (b, i, j) => {
     if (h < boardSize - 1 && k > 0) {
       h++;
       k--;
-    } else break
+    } else break;
   }
 
   if (i > 0 && j < boardSize - 1) {
@@ -182,7 +183,6 @@ const rule2Check = (b, i, j) => {
         h--;
         k++;
       } else break;
-
     }
   }
   if (d.length > 4) return d;
@@ -196,7 +196,7 @@ const rule1Check = (b, i, j) => {
   let d = Array();
   let k;
   let h;
-  let op = 0;// số đầu bị chặn
+  let op = 0; // số đầu bị chặn
   // kiểm tra hàng
   k = i;
   while (b[k][j] === b[i][j]) {
@@ -257,7 +257,7 @@ const rule1Check = (b, i, j) => {
       if (h > 0 && k > 0) {
         h--;
         k--;
-      } else break
+      } else break;
     }
   }
   if (b[h][k] !== null || h === 0 || k === 0) op++;
@@ -273,7 +273,7 @@ const rule1Check = (b, i, j) => {
     if (h < boardSize - 1 && k > 0) {
       h++;
       k--;
-    } else break
+    } else break;
   }
   if (b[h][k] !== null || h === boardSize - 1 || k === 0) op++;
 
@@ -296,7 +296,6 @@ const rule1Check = (b, i, j) => {
 
 //checkWin
 const checkWin = async (updatedMatch, rule) => {
-
   //move= i*boardSize+j
   const { history, players } = updatedMatch;
   const b = historyTo2DArray(history);
@@ -332,7 +331,7 @@ const checkWin = async (updatedMatch, rule) => {
     return { winRaw, winner, cupDataChange, matchPlayers: players }
   }
   return false;
-}
+};
 const updateFinnishMatch = async (winRaw, updatedMatch) => {
   const match = await getMatchByMatchId(updatedMatch._id);
   const { history, players } = updatedMatch;
@@ -442,6 +441,6 @@ module.exports = {
   getHistoryByUserId,
   checkWin,
   endMatch,
-  updateFinnishMatch
+  updateFinnishMatch,
   // getHistoryByUserId,
 };

@@ -96,7 +96,6 @@ const outRoom = async (userId, roomId) => {
       .populate('audiences')
       .populate('players.user')
       .exec();
-    console.log('Room' + room._id);
     let userInAudiences = true;
     room.players.forEach((player) => {
       if (player.user._id.toString() === userId.toString()) {
