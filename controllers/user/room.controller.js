@@ -1,8 +1,9 @@
-const httpStatus = require('http-status');
+const httpStatus = require("http-status");
 
-const catchAsync = require('../../utils/catchAsync');
-const { roomService, socketService } = require('../../services');
-const { emitRoomData } = require('../../services/socket.service');
+const catchAsync = require("../../utils/catchAsync");
+const { userService, roomService, socketService } = require("../../services");
+
+const { emitRoomData } = require("../../services/socket.service");
 
 const getAllRoom = catchAsync(async (req, res) => {
   const rooms = await roomService.getAllRoom();
@@ -13,8 +14,15 @@ const getAllRoom = catchAsync(async (req, res) => {
 });
 
 const getRandomRoom = catchAsync(async (req, res) => {
-  const room = await roomService.getRandom();
-  res.status(httpStatus.OK).json({ success: true, room });
+  const { userId } = req.query;
+  try {
+    const user = await userService.getUserById(userId);
+    const cup = user.cup;
+    const room = await roomService.getRandom(cup);
+    res.status(httpStatus.OK).json({ success: true, room });
+  } catch (err) {
+    res.status(httpStatus.ERROR).json({ success: false, err });
+  }
 });
 
 const getRoom = catchAsync(async (req, res) => {
@@ -54,7 +62,7 @@ const outRoom = catchAsync(async (req, res) => {
   const { userId } = req.body;
   const { roomId } = req.params;
   const room = await roomService.outRoom(userId, roomId);
-  console.log('Here');
+  console.log("Here");
   res.status(httpStatus.OK).json({ success: true, room });
 });
 
@@ -68,7 +76,7 @@ const joinPlayerQueue = catchAsync(async (req, res) => {
   } else {
     res
       .status(httpStatus.BAD_REQUEST)
-      .json({ success: false, message: 'Phòng đã đầy' });
+      .json({ success: false, message: "Phòng đã đầy" });
   }
 });
 
@@ -93,7 +101,7 @@ const updatePlayerIsReady = catchAsync(async (req, res) => {
   } else {
     res
       .status(httpStatus.BAD_REQUEST)
-      .json({ success: false, message: 'Lỗi Cập nhật trạng thái người chơi' });
+      .json({ success: false, message: "Lỗi Cập nhật trạng thái người chơi" });
   }
 });
 
