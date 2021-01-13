@@ -323,7 +323,7 @@ const checkWin = async (updatedMatch, rule) => {
 }
 const updateFinnishMatch = async (winRaw, updatedMatch) => {
   const match = await getMatchByMatchId(updatedMatch._id);
-  const { history, players } = match;
+  const { history, players } = updatedMatch;
   const diffCup = players[0].cup - players[1].cup;
   const p1Offer = getCupOffer(players[0].cup, diffCup);
   const p2Offer = getCupOffer(players[1].cup, diffCup);
@@ -336,11 +336,12 @@ const updateFinnishMatch = async (winRaw, updatedMatch) => {
       },
     }
   );
+  console.log(history)
+  console.log(match)
   if (history.length % 2 === 1) {
     console.log("1")
     //số lẻ là X=> người chơi 1 win
     winner = players[0]._id;
-    const { players } = match
     await match.update({
       $set: {
         winRaw: winRaw,
