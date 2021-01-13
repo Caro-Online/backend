@@ -119,22 +119,27 @@ const listenToJoinEvent = (socket, io) => {
       try {
         let room = await roomService.getRoomById(roomId);
         let updatedPlayers = room.players;
+        let isPlayerLeftRoom = false;
         const player1 = updatedPlayers[0];
         const player2 = updatedPlayers[1];
-        console.log(player1.user.currentRoom, player2.user.currentRoom);
         if (player1.user.currentRoom === null) {
+          isPlayerLeftRoom = true;
           updatedPlayers = updatedPlayers.filter(
             (player) =>
               player.user._id.toString() !== player1.user._id.toString()
           );
         }
         if (player2.user.currentRoom === null) {
+          isPlayerLeftRoom = true;
           updatedPlayers = updatedPlayers.filter(
             (player) =>
               player.user._id.toString() !== player2.user._id.toString()
           );
         }
         room.players = updatedPlayers;
+        if (isPlayerLeftRoom) {
+          room.status = 'WAITING';
+        }
         room.save();
         // Emit sự kiện cho tất cả các client trong phòng update lại
         io.to(room.roomId).emit('room-data', {
@@ -145,7 +150,7 @@ const listenToJoinEvent = (socket, io) => {
       }
     });
     socket.on('match-start', ({ match }) => {
-      console.log(match)
+      console.log(match);
       console.log('emit match start update');
       // Emit sự kiện match-start-update để update thông tin match cho các client còn lại trong phòng trừ thằng emit sự kiện match-start
 
@@ -170,7 +175,7 @@ const listenToJoinEvent = (socket, io) => {
           },
           cupDataChange: check.cupDataChange,
         });
-        matchService.updateFinnishMatch(check.winRaw, match)
+        matchService.updateFinnishMatch(check.winRaw, match);
       } else {
         socket.broadcast
           .to(user.currentRoom)
