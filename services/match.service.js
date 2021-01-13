@@ -18,18 +18,19 @@ const getMatchByMatchId = async (matchId) => {
   return match;
 };
 //roomId: _id
-const createMatch = async (players, room) => {
-  const date = new Date(Date.now() + (room.countdownDuration + 2) * 1000);
+const createMatch = async (players, roomId, countdownDuration) => {
+  console.log(countdownDuration);
+  const date = new Date(Date.now() + (countdownDuration + 2) * 1000);
   const timeExp = moment.utc(date).format();
   const match = new Match({
-    room: room._id,
+    room: roomId,
     players: players,
     history: [],
     winner: null,
     timeExp: timeExp,
   });
   await match.save();
-  return Match.populate(match, { path: "players" });
+  return Match.populate(match, { path: 'players' });
 };
 // Id of room = _id (khác với RoomId)
 //Trả về match tạo sau nhất theo createdAt
@@ -156,7 +157,7 @@ const rule2Check = (b, i, j) => {
       if (h > 0 && k > 0) {
         h--;
         k--;
-      } else break
+      } else break;
     }
   }
   if (d.length > 4) return d;
@@ -170,7 +171,7 @@ const rule2Check = (b, i, j) => {
     if (h < boardSize - 1 && k > 0) {
       h++;
       k--;
-    } else break
+    } else break;
   }
 
   if (i > 0 && j < boardSize - 1) {
@@ -182,7 +183,6 @@ const rule2Check = (b, i, j) => {
         h--;
         k++;
       } else break;
-
     }
   }
   if (d.length > 4) return d;
@@ -196,7 +196,7 @@ const rule1Check = (b, i, j) => {
   let d = Array();
   let k;
   let h;
-  let op = 0;// số đầu bị chặn
+  let op = 0; // số đầu bị chặn
   // kiểm tra hàng
   k = i;
   while (b[k][j] === b[i][j]) {
@@ -257,7 +257,7 @@ const rule1Check = (b, i, j) => {
       if (h > 0 && k > 0) {
         h--;
         k--;
-      } else break
+      } else break;
     }
   }
   if (b[h][k] !== null || h === 0 || k === 0) op++;
@@ -273,7 +273,7 @@ const rule1Check = (b, i, j) => {
     if (h < boardSize - 1 && k > 0) {
       h++;
       k--;
-    } else break
+    } else break;
   }
   if (b[h][k] !== null || h === boardSize - 1 || k === 0) op++;
 
@@ -296,14 +296,14 @@ const rule1Check = (b, i, j) => {
 
 //checkWin
 const checkWin = async (updatedMatch, rule) => {
-
   //move= i*boardSize+j
   const { history } = updatedMatch;
   const b = historyTo2DArray(history);
   const i = Math.floor(history[history.length - 1] / boardSize);
   const j = history[history.length - 1] % boardSize;
-  //checkwin 
-  let winRaw; let winner;
+  //checkwin
+  let winRaw;
+  let winner;
   if (rule) {
     winRaw = rule1Check(b, i, j);
   } else {
@@ -312,15 +312,14 @@ const checkWin = async (updatedMatch, rule) => {
   if (winRaw) {
     if (history.length % 2 === 1) {
       winner = updatedMatch.players[0]._id;
-
     } else {
       winner = updatedMatch.players[1]._id;
     }
     const cupDataChange = updateUser(winner, updatedMatch.players);
-    return { winRaw, winner, cupDataChange }
+    return { winRaw, winner, cupDataChange };
   }
   return false;
-}
+};
 const updateFinnishMatch = async (winRaw, updatedMatch) => {
   const match = await getMatchByMatchId(updatedMatch._id);
   const { history, players } = match;
@@ -337,10 +336,10 @@ const updateFinnishMatch = async (winRaw, updatedMatch) => {
     }
   );
   if (history.length % 2 === 1) {
-    console.log("1")
+    console.log('1');
     //số lẻ là X=> người chơi 1 win
     winner = players[0]._id;
-    const { players } = match
+    const { players } = match;
     await match.update({
       $set: {
         winRaw: winRaw,
@@ -365,7 +364,7 @@ const updateFinnishMatch = async (winRaw, updatedMatch) => {
       ),
     ]);
   } else {
-    console.log("2")
+    console.log('2');
     winner = players[1]._id;
     await match.update({
       $set: {
@@ -373,7 +372,7 @@ const updateFinnishMatch = async (winRaw, updatedMatch) => {
         winner: players[1]._id,
       },
     });
-    console.log(match)
+    console.log(match);
     await Promise.all([
       User.findOneAndUpdate(
         { _id: players[0]._id },
@@ -392,7 +391,7 @@ const updateFinnishMatch = async (winRaw, updatedMatch) => {
       ),
     ]);
   }
-}
+};
 
 const updateUser = (winner, players) => {
   console.log('update cup');
@@ -466,6 +465,6 @@ module.exports = {
   getHistoryByUserId,
   checkWin,
   endMatch,
-  updateFinnishMatch
+  updateFinnishMatch,
   // getHistoryByUserId,
 };

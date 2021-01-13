@@ -3,10 +3,13 @@ const catchAsync = require('../../utils/catchAsync');
 const { matchService, roomService } = require('../../services');
 
 const createMatch = catchAsync(async (req, res) => {
-  const { players, roomId } = req.body;
+  const { players, roomId, countdownDuration } = req.body;
   // tìm countdownduration của room
-  const room = await roomService.getRoomById(roomId);
-  const match = await matchService.createMatch(players, room);
+  const match = await matchService.createMatch(
+    players,
+    roomId,
+    countdownDuration
+  );
   res.status(httpStatus.OK).json({ success: true, match });
 });
 
@@ -55,9 +58,10 @@ const endMatch = catchAsync(async (req, res) => {
   if (endData) {
     res.status(httpStatus.OK).json({ success: true, endData });
   } else {
-    res.status(httpStatus.OK).json({ success: false, message: "end match failed" });
+    res
+      .status(httpStatus.OK)
+      .json({ success: false, message: 'end match failed' });
   }
-
 });
 
 module.exports = {

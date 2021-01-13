@@ -6,6 +6,7 @@ matchValidation.createMatch = {
   body: Joi.object({
     players: Joi.array().required(),
     roomId: Joi.string().required(),
+    countdownDuration: Joi.number().required(),
   }),
 };
 
