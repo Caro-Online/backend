@@ -7,9 +7,12 @@ const ApiError = require('../utils/ApiError');
 const httpStatus = require('http-status');
 const moment = require('moment');
 
-const emitUserOnline = (userId) => {
+const emitUserOnline = async (userId) => {
+  const user = await userService.getUserById(userId);
+  console.log('UserOnline');
+  console.log(user);
   socketIo.getIO().emit('user-online', {
-    userId,
+    user,
   });
 };
 
@@ -174,7 +177,7 @@ const listenToJoinEvent = (socket, io) => {
             timeExp: timeExp,
           },
           cupDataChange: check.cupDataChange,
-          matchPlayers: check.matchPlayers
+          matchPlayers: check.matchPlayers,
         });
         await matchService.updateFinnishMatch(check.winRaw, match);
       } else {

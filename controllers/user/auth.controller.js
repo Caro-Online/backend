@@ -64,8 +64,8 @@ const loginFacebook = catchAsync(async (req, res) => {
     email,
     response.url
   );
-  socketService.emitUserOnline(user._id);
   user = await userService.updateStatusToOnline(user);
+  socketService.emitUserOnline(user._id);
   res.status(httpStatus.OK).json({
     success: true,
     token,
@@ -92,8 +92,8 @@ const loginGoogle = catchAsync(async (req, res) => {
       email,
       picture
     );
-    socketService.emitUserOnline(user._id);
     user = await userService.updateStatusToOnline(user);
+    socketService.emitUserOnline(user._id);
     res.status(httpStatus.OK).json({
       success: true,
       token,
@@ -114,7 +114,7 @@ const sendResetPasswordEmail = catchAsync(async (req, res) => {
   // Tìm user
   const user = await userService.getUserByEmail(email);
 
-  userService.initResetToken(user,resetToken);
+  userService.initResetToken(user, resetToken);
 
   //Send mail
   mailService.sendResetPasswordEmail(resetToken, email);
