@@ -105,6 +105,24 @@ const rule2Check = (b, i, j) => {
   let h;
   // kiểm tra hàng
   k = i;
+  while (b[i][k] === b[i][j]) {
+    d.push(i * boardSize + k);
+    if (k < boardSize - 1) k++;
+    else break;
+  }
+
+  if (j > 0) {
+    h = j - 1;
+    while (b[i][h] === b[i][j]) {
+      d.push(i * boardSize + h);
+      if (h > 0) h--;
+      else break;
+    }
+  }
+  if (d.length > 4) return d;
+  d = Array();
+  k = i;
+  // kiểm tra cột
   while (b[k][j] === b[i][j]) {
     d.push(k * boardSize + j);
     if (k < boardSize - 1) k++;
@@ -115,24 +133,6 @@ const rule2Check = (b, i, j) => {
     h = i - 1;
     while (b[h][j] === b[i][j]) {
       d.push(h * boardSize + j);
-      if (h > 0) h--;
-      else break;
-    }
-  }
-  if (d.length > 4) return d;
-  d = Array();
-  k = j;
-  // kiểm tra cột
-  while (b[i][k] === b[i][j]) {
-    d.push(i * boardSize + h);
-    if (k < boardSize - 1) k++;
-    else break;
-  }
-
-  if (j > 0) {
-    h = j - 1;
-    while (b[i][h] === b[i][j]) {
-      d.push(i * boardSize + h);
       if (h > 0) h--;
       else break;
     }
@@ -198,43 +198,43 @@ const rule1Check = (b, i, j) => {
   let h;
   let op = 0; // số đầu bị chặn
   // kiểm tra hàng
-  k = i;
+  k = j;
+  while (b[i][k] === b[i][j]) {
+    d.push(i * boardSize + k);
+    if (k < boardSize - 1) k++;
+    else break;
+  }
+  if (b[i][k] !== null || k === boardSize - 1) op++;
+  if (j > 0) {
+    k = j - 1;
+    while (b[i][k] === b[i][j]) {
+      d.push(i * boardSize + k);
+      if (k > 0) k--;
+      else break;
+    }
+  }
+  if (b[i][k] !== null || k === 0) op++;
+  if (d.length > 5 || (d.length === 5 && op < 2)) return d;
+  d = Array();
+  k = j;
+  op = 0;
+  // kiểm tra cột
   while (b[k][j] === b[i][j]) {
     d.push(k * boardSize + j);
     if (k < boardSize - 1) k++;
     else break;
   }
   if (b[k][j] !== null || k === boardSize - 1) op++;
-  if (i > 0) {
-    k = i - 1;
-    while (b[k][j] === b[i][j]) {
-      d.push(k * boardSize + j);
-      if (k > 0) k--;
-      else break;
-    }
-  }
-  if (b[k][j] !== null || k === 0) op++;
-  if (d.length > 5 || (d.length === 5 && op < 2)) return d;
-  d = Array();
-  k = j;
-  op = 0;
-  // kiểm tra cột
-  while (b[i][k] === b[i][j]) {
-    d.push(i * boardSize + h);
-    if (k < boardSize - 1) k++;
-    else break;
-  }
-  if (b[i][k] !== null || k === boardSize - 1) op++;
 
-  if (j > 0) {
-    h = j - 1;
-    while (b[i][h] === b[i][j]) {
-      d.push(i * boardSize + h);
+  if (i > 0) {
+    h = i - 1;
+    while (b[h][j] === b[i][j]) {
+      d.push(h * boardSize + j);
       if (h > 0) h--;
       else break;
     }
   }
-  if (b[i][h] !== null || h === 0) op++;
+  if (b[h][j] !== null || h === 0) op++;
   if (d.length > 5 || (d.length === 5 && op < 2)) return d;
   // kiểm tra đường chéo 1
   h = i;
@@ -414,7 +414,7 @@ const getCupOffer = (currentCup, differenceCup) => {
     subCup += differenceLevel * 2;
   } else {
     //lệch trên 4 cấp
-    if (differenceLevel < 0) {
+    if (differenceLevel > 0) {
       //nếu hơn cúp
       plusCup = 10;
       subCup = 30;
