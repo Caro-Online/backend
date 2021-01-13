@@ -51,7 +51,8 @@ const getHistoryByUserId = (userId) => {
     },
   })
     .sort({ createdAt: -1 })
-    .populate('room');
+    .populate('room')
+    .populate('players');
   return match;
 };
 const getHistory = (data) => {
