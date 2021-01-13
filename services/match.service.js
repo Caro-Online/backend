@@ -296,7 +296,7 @@ const rule1Check = (b, i, j) => {
 
 //checkWin
 const checkWin = async (updatedMatch, rule) => {
-  //const match = await getMatchByMatchId(updatedMatch._id);
+
   //move= i*boardSize+j
   const { history } = updatedMatch;
   const b = historyTo2DArray(history);
@@ -321,8 +321,13 @@ const checkWin = async (updatedMatch, rule) => {
   }
   return false;
 }
-const updateFinnishMatch = (winRaw, match) => {
-  Room.findOneAndUpdate(
+const updateFinnishMatch = async (winRaw, updatedMatch) => {
+  const match = await getMatchByMatchId(updatedMatch._id);
+  const { history, players } = match;
+  const diffCup = players[0].cup - players[1].cup;
+  const p1Offer = getCupOffer(players[0].cup, diffCup);
+  const p2Offer = getCupOffer(players[1].cup, diffCup);
+  await Room.findOneAndUpdate(
     { _id: match.room },
     {
       $set: {
@@ -332,16 +337,17 @@ const updateFinnishMatch = (winRaw, match) => {
     }
   );
   if (history.length % 2 === 1) {
+    console.log("1")
     //số lẻ là X=> người chơi 1 win
-    winner = match.players[0]._id;
+    winner = players[0]._id;
     const { players } = match
-    match.update({
+    await match.update({
       $set: {
         winRaw: winRaw,
         winner: players[0]._id,
       },
     });
-    Promise.all([
+    await Promise.all([
       User.findOneAndUpdate(
         { _id: players[0]._id },
         {
@@ -359,14 +365,16 @@ const updateFinnishMatch = (winRaw, match) => {
       ),
     ]);
   } else {
-    winner = match.players[1]._id;
-    match.update({
+    console.log("2")
+    winner = players[1]._id;
+    await match.update({
       $set: {
         winRaw: winRaw,
         winner: players[1]._id,
       },
     });
-    Promise.all([
+    console.log(match)
+    await Promise.all([
       User.findOneAndUpdate(
         { _id: players[0]._id },
         {

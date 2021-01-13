@@ -145,7 +145,6 @@ const listenToJoinEvent = (socket, io) => {
       }
     });
     socket.on('match-start', ({ match }) => {
-      console.log(match)
       console.log('emit match start update');
       // Emit sự kiện match-start-update để update thông tin match cho các client còn lại trong phòng trừ thằng emit sự kiện match-start
 
@@ -159,6 +158,7 @@ const listenToJoinEvent = (socket, io) => {
       // Kiểm tra thắng thua
       const check = await matchService.checkWin(match, rule);
       if (check) {
+        console.log(check)
         const date = new Date(Date.now() + (room.countdownDuration + 1) * 1000);
         const timeExp = moment.utc(date).format();
         io.in(user.currentRoom).emit('have-winner', {
@@ -170,7 +170,7 @@ const listenToJoinEvent = (socket, io) => {
           },
           cupDataChange: check.cupDataChange,
         });
-        matchService.updateFinnishMatch(check.winRaw, match)
+        await matchService.updateFinnishMatch(check.winRaw, match)
       } else {
         socket.broadcast
           .to(user.currentRoom)
