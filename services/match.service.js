@@ -397,7 +397,7 @@ const endMatch = async (matchId, loserId) => {
   const date = new Date(Date.now() + 20 * 1000);
   match.timeExp = moment.utc(date).format();
   match.save();
-  const cupDataChange = await updateUser(winner._id, match.players);
+  const cupDataChange = await getCupChange(winner._id, match.players);
   return { match, cupDataChange };
   //udpate cup,matchhavewin,matchplayed
 };

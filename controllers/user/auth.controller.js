@@ -1,15 +1,15 @@
-const httpStatus = require('http-status');
-const { v4: uuidv4 } = require('uuid');
-const fetch = require('node-fetch');
+const httpStatus = require("http-status");
+const { v4: uuidv4 } = require("uuid");
+const fetch = require("node-fetch");
 
-const catchAsync = require('../../utils/catchAsync');
+const catchAsync = require("../../utils/catchAsync");
 const {
   authUserService,
   tokenService,
   userService,
   socketService,
   mailService,
-} = require('../../services');
+} = require("../../services");
 
 const register = catchAsync(async (req, res) => {
   // Tạo email verify token
@@ -57,15 +57,18 @@ const loginFacebook = catchAsync(async (req, res) => {
   } = await authUserService.verifyAccessTokenFromFacebook(userId, accessToken);
   let urlGetPicture = `https://graph.facebook.com/${userId}/picture`;
   const response = await fetch(urlGetPicture, {
-    method: 'GET',
+    method: "GET",
   });
-  let { user, token } = await userService.processUserLoginFacebookGoogle(
-    name,
-    email,
-    response.url
-  );
-  socketService.emitUserOnline(user._id);
+
+  //Nếu user bị chặn
+  if (user.isBlock) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Tài khoản của bạn đã bị khoá!"
+    );
+  }
   user = await userService.updateStatusToOnline(user);
+  socketService.emitUserOnline(user._id);
   res.status(httpStatus.OK).json({
     success: true,
     token,
@@ -92,8 +95,8 @@ const loginGoogle = catchAsync(async (req, res) => {
       email,
       picture
     );
-    socketService.emitUserOnline(user._id);
     user = await userService.updateStatusToOnline(user);
+    socketService.emitUserOnline(user._id);
     res.status(httpStatus.OK).json({
       success: true,
       token,
@@ -114,7 +117,7 @@ const sendResetPasswordEmail = catchAsync(async (req, res) => {
   // Tìm user
   const user = await userService.getUserByEmail(email);
 
-  userService.initResetToken(user,resetToken);
+  userService.initResetToken(user, resetToken);
 
   //Send mail
   mailService.sendResetPasswordEmail(resetToken, email);
