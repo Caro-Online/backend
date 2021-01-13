@@ -144,13 +144,14 @@ const listenToJoinEvent = (socket, io) => {
         throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, err.message);
       }
     });
-    socket.on('match-start', ({ matchId }) => {
+    socket.on('match-start', ({ match }) => {
+      console.log(match)
       console.log('emit match start update');
       // Emit sự kiện match-start-update để update thông tin match cho các client còn lại trong phòng trừ thằng emit sự kiện match-start
 
       socket.broadcast
         .to(user.currentRoom)
-        .emit('match-start-update', { matchId });
+        .emit('match-start-update', { match });
       // // Emit sự kiện match-start cho tất cả các client trong phòng để lắng nghe sự kiện receive-move
       // io.in(user.currentRoom).emit('match-start', { matchId });
     });
@@ -158,7 +159,7 @@ const listenToJoinEvent = (socket, io) => {
       // Kiểm tra thắng thua
       const check = await matchService.checkWin(match, rule);
       if (check) {
-        const date = new Date(Date.now() + room.countdownDuration * 1000);
+        const date = new Date(Date.now() + (room.countdownDuration + 1) * 1000);
         const timeExp = moment.utc(date).format();
         io.in(user.currentRoom).emit('have-winner', {
           updatedMatch: {
@@ -169,6 +170,7 @@ const listenToJoinEvent = (socket, io) => {
           },
           cupDataChange: check.cupDataChange,
         });
+        matchService.updateFinnishMatch(check.winRaw, match)
       } else {
         socket.broadcast
           .to(user.currentRoom)
@@ -194,7 +196,7 @@ const listenToJoinEvent = (socket, io) => {
         );
         io.in(user.currentRoom).emit('match-start-update', {
           //update match
-          matchId: match._id,
+          match: match,
         });
         // io.in(user.currentRoom).emit('match-start', {
         //   //để init lại socket.on

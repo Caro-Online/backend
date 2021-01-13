@@ -5,6 +5,7 @@ const roomService = require('./room.service');
 const { Match, Room, User } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { matchService } = require('.');
+const { async } = require('crypto-random-string');
 
 const getMatchByMatchId = async (matchId) => {
   const match = await Match.findById(matchId).populate('players');
@@ -17,8 +18,8 @@ const getMatchByMatchId = async (matchId) => {
   return match;
 };
 //roomId: _id
-const createMatch = (players, room) => {
-  const date = new Date(Date.now() + room.countdownDuration * 1000);
+const createMatch = async (players, room) => {
+  const date = new Date(Date.now() + (room.countdownDuration + 2) * 1000);
   const timeExp = moment.utc(date).format();
   const match = new Match({
     room: room._id,
@@ -27,7 +28,8 @@ const createMatch = (players, room) => {
     winner: null,
     timeExp: timeExp,
   });
-  return match.save();
+  await match.save();
+  return Match.populate(match, { path: "players" });
 };
 // Id of room = _id (khác với RoomId)
 //Trả về match tạo sau nhất theo createdAt
@@ -294,71 +296,52 @@ const rule1Check = (b, i, j) => {
 
 //checkWin
 const checkWin = async (updatedMatch, rule) => {
-  const match = await getMatchByMatchId(updatedMatch._id);
+  //const match = await getMatchByMatchId(updatedMatch._id);
   //move= i*boardSize+j
   const { history } = updatedMatch;
   const b = historyTo2DArray(history);
   const i = Math.floor(history[history.length - 1] / boardSize);
   const j = history[history.length - 1] % boardSize;
   //checkwin 
-  let winRaw
+  let winRaw; let winner;
   if (rule) {
     winRaw = rule1Check(b, i, j);
   } else {
     winRaw = rule2Check(b, i, j);
   }
   if (winRaw) {
-    //cập nhật trạng thái isReady=false cho 2 user
-    await Room.findOneAndUpdate(
-      { _id: updatedMatch.room },
-      {
-        $set: {
-          'players.$[].isReady': false,
-          status: 'WAITING',
-        },
-      }
-    );
-    let winner;
-    let cupDataChange;
-    //cập nhật win raw và winner
     if (history.length % 2 === 1) {
-      //số lẻ là X=> người chơi 1 win
       winner = updatedMatch.players[0]._id;
-      await match.update({
-        $set: {
-          winRaw: winRaw,
-          winner: updatedMatch.players[0]._id,
-        },
-      });
-      cupDataChange = await updateUser(winner, updatedMatch.players);
-      return { winRaw, winner, cupDataChange };
+
     } else {
       winner = updatedMatch.players[1]._id;
-      await match.update({
-        $set: {
-          winRaw: winRaw,
-          winner: updatedMatch.players[1]._id,
-        },
-      });
-      cupDataChange = await updateUser(winner, updatedMatch.players);
-      return { winRaw, winner, cupDataChange };
     }
+    const cupDataChange = updateUser(winner, updatedMatch.players);
+    return { winRaw, winner, cupDataChange }
   }
-
   return false;
-};
-
-const updateUser = async (winner, players) => {
-  console.log('update cup');
-  //Tính số cúp thưởng và phạt theo cúp hiện tại và chênh lệch cup
-  const diffCup = players[0].cup - players[1].cup;
-  const p1Offer = await getCupOffer(players[0].cup, diffCup);
-  const p2Offer = await getCupOffer(players[1].cup, diffCup);
-  console.log(p1Offer);
-  console.log(p2Offer);
-  console.log(winner);
-  if (players[0]._id === winner) {
-    await Promise.all([
+}
+const updateFinnishMatch = (winRaw, match) => {
+  Room.findOneAndUpdate(
+    { _id: match.room },
+    {
+      $set: {
+        'players.$[].isReady': false,
+        status: 'WAITING',
+      },
+    }
+  );
+  if (history.length % 2 === 1) {
+    //số lẻ là X=> người chơi 1 win
+    winner = match.players[0]._id;
+    const { players } = match
+    match.update({
+      $set: {
+        winRaw: winRaw,
+        winner: players[0]._id,
+      },
+    });
+    Promise.all([
       User.findOneAndUpdate(
         { _id: players[0]._id },
         {
@@ -375,9 +358,15 @@ const updateUser = async (winner, players) => {
         }
       ),
     ]);
-    return [p1Offer.plusCup, p2Offer.subCup]; //[cúp cộng, cúp trừ]
   } else {
-    await Promise.all([
+    winner = match.players[1]._id;
+    match.update({
+      $set: {
+        winRaw: winRaw,
+        winner: players[1]._id,
+      },
+    });
+    Promise.all([
       User.findOneAndUpdate(
         { _id: players[0]._id },
         {
@@ -394,6 +383,21 @@ const updateUser = async (winner, players) => {
         }
       ),
     ]);
+  }
+}
+
+const updateUser = (winner, players) => {
+  console.log('update cup');
+  //Tính số cúp thưởng và phạt theo cúp hiện tại và chênh lệch cup
+  const diffCup = players[0].cup - players[1].cup;
+  const p1Offer = getCupOffer(players[0].cup, diffCup);
+  const p2Offer = getCupOffer(players[1].cup, diffCup);
+  console.log(p1Offer);
+  console.log(p2Offer);
+  console.log(winner);
+  if (players[0]._id === winner) {
+    return [p1Offer.plusCup, p2Offer.subCup]; //[cúp cộng, cúp trừ]
+  } else {
     return [p2Offer.plusCup, p1Offer.subCup]; //[cúp cộng, cúp trừ]
   }
 };
@@ -454,5 +458,6 @@ module.exports = {
   getHistoryByUserId,
   checkWin,
   endMatch,
+  updateFinnishMatch
   // getHistoryByUserId,
 };
