@@ -397,7 +397,7 @@ const endMatch = async (matchId, loserId) => {
   const date = new Date(Date.now() + 20 * 1000);
   match.timeExp = moment.utc(date).format();
   match.save();
-  const cupDataChange = await updateUser(winner._id, match.players);
+  const cupDataChange = await getCupChange(winner._id, match.players);
   return { match, cupDataChange };
   //udpate cup,matchhavewin,matchplayed
 };
@@ -414,7 +414,7 @@ const getCupOffer = (currentCup, differenceCup) => {
     subCup += differenceLevel * 2;
   } else {
     //lệch trên 4 cấp
-    if (differenceLevel < 0) {
+    if (differenceLevel > 0) {
       //nếu hơn cúp
       plusCup = 10;
       subCup = 30;
