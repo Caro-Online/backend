@@ -169,6 +169,7 @@ const listenToJoinEvent = (socket, io) => {
             timeExp: timeExp,
           },
           cupDataChange: check.cupDataChange,
+          matchPlayers: check.matchPlayers
         });
         await matchService.updateFinnishMatch(check.winRaw, match)
       } else {

@@ -298,10 +298,13 @@ const rule1Check = (b, i, j) => {
 const checkWin = async (updatedMatch, rule) => {
 
   //move= i*boardSize+j
-  const { history } = updatedMatch;
+  const { history, players } = updatedMatch;
   const b = historyTo2DArray(history);
   const i = Math.floor(history[history.length - 1] / boardSize);
   const j = history[history.length - 1] % boardSize;
+  const diffCup = players[0].cup - players[1].cup;
+  const p1Offer = getCupOffer(players[0].cup, diffCup);
+  const p2Offer = getCupOffer(players[1].cup, diffCup);
   //checkwin 
   let winRaw; let winner;
   if (rule) {
@@ -312,21 +315,27 @@ const checkWin = async (updatedMatch, rule) => {
   if (winRaw) {
     if (history.length % 2 === 1) {
       winner = updatedMatch.players[0]._id;
-
+      players[0].cup += p1Offer.plusCup
+      players[0].matchHavePlayed += 1
+      players[0].matchHaveWon += 1
+      players[1].cup -= p2Offer.subCup
+      players[1].matchHavePlayed += 1
     } else {
       winner = updatedMatch.players[1]._id;
+      players[0].cup -= p1Offer.subCup
+      players[0].matchHavePlayed += 1
+      players[1].cup += p2Offer.plusCup
+      players[1].matchHavePlayed += 1
+      players[1].matchHaveWon += 1
     }
-    const cupDataChange = updateUser(winner, updatedMatch.players);
-    return { winRaw, winner, cupDataChange }
+    const cupDataChange = getCupChange(winner, updatedMatch.players);
+    return { winRaw, winner, cupDataChange, matchPlayers: players }
   }
   return false;
 }
 const updateFinnishMatch = async (winRaw, updatedMatch) => {
   const match = await getMatchByMatchId(updatedMatch._id);
   const { history, players } = updatedMatch;
-  const diffCup = players[0].cup - players[1].cup;
-  const p1Offer = getCupOffer(players[0].cup, diffCup);
-  const p2Offer = getCupOffer(players[1].cup, diffCup);
   await Room.findOneAndUpdate(
     { _id: match.room },
     {
@@ -336,10 +345,7 @@ const updateFinnishMatch = async (winRaw, updatedMatch) => {
       },
     }
   );
-  console.log(history)
-  console.log(match)
   if (history.length % 2 === 1) {
-    console.log("1")
     //số lẻ là X=> người chơi 1 win
     winner = players[0]._id;
     await match.update({
@@ -348,25 +354,8 @@ const updateFinnishMatch = async (winRaw, updatedMatch) => {
         winner: players[0]._id,
       },
     });
-    await Promise.all([
-      User.findOneAndUpdate(
-        { _id: players[0]._id },
-        {
-          cup: players[0].cup + p1Offer.plusCup,
-          matchHavePlayed: players[0].matchHavePlayed + 1,
-          matchHaveWon: players[0].matchHaveWon + 1,
-        }
-      ),
-      User.findOneAndUpdate(
-        { _id: players[1]._id },
-        {
-          cup: players[1].cup - p2Offer.subCup,
-          matchHavePlayed: players[1].matchHavePlayed + 1,
-        }
-      ),
-    ]);
+
   } else {
-    console.log("2")
     winner = players[1]._id;
     await match.update({
       $set: {
@@ -374,36 +363,22 @@ const updateFinnishMatch = async (winRaw, updatedMatch) => {
         winner: players[1]._id,
       },
     });
-    console.log(match)
-    await Promise.all([
-      User.findOneAndUpdate(
-        { _id: players[0]._id },
-        {
-          cup: players[0].cup - p1Offer.subCup,
-          matchHavePlayed: players[0].matchHavePlayed + 1,
-        }
-      ),
-      User.findOneAndUpdate(
-        { _id: players[1]._id },
-        {
-          cup: players[1].cup + p2Offer.plusCup,
-          matchHavePlayed: players[1].matchHavePlayed + 1,
-          matchHaveWon: players[1].matchHaveWon + 1,
-        }
-      ),
-    ]);
+
   }
+  await Promise.all([
+    User.findOneAndUpdate(
+      { _id: players[0]._id }, players[0]),
+    User.findOneAndUpdate(
+      { _id: players[1]._id }, players[1]),
+  ]);
 }
 
-const updateUser = (winner, players) => {
+const getCupChange = (winner, players) => {
   console.log('update cup');
   //Tính số cúp thưởng và phạt theo cúp hiện tại và chênh lệch cup
   const diffCup = players[0].cup - players[1].cup;
   const p1Offer = getCupOffer(players[0].cup, diffCup);
   const p2Offer = getCupOffer(players[1].cup, diffCup);
-  console.log(p1Offer);
-  console.log(p2Offer);
-  console.log(winner);
   if (players[0]._id === winner) {
     return [p1Offer.plusCup, p2Offer.subCup]; //[cúp cộng, cúp trừ]
   } else {
