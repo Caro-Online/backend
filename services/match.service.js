@@ -52,7 +52,8 @@ const getHistoryByUserId = (userId) => {
   })
     .sort({ createdAt: -1 })
     .populate('room')
-    .populate('players');
+    .populate('players')
+    .populate({ path: "room", populate: { path: "chat", populate: { path: "user", select: 'name' } } })
   return match;
 };
 const getHistory = (data) => {
@@ -105,7 +106,7 @@ const rule2Check = (b, i, j) => {
   let k;
   let h;
   // kiểm tra hàng
-  k = i;
+  k = j;
   while (b[i][k] === b[i][j]) {
     d.push(i * boardSize + k);
     if (k < boardSize - 1) k++;
@@ -217,7 +218,7 @@ const rule1Check = (b, i, j) => {
   if (b[i][k] !== null || k === 0) op++;
   if (d.length > 5 || (d.length === 5 && op < 2)) return d;
   d = Array();
-  k = j;
+  k = i;
   op = 0;
   // kiểm tra cột
   while (b[k][j] === b[i][j]) {
