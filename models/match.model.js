@@ -15,6 +15,8 @@ const matchSchema = mongoose.Schema(
     winner: { type: Schema.Types.ObjectId, ref: 'User' },
     winRaw: [{ type: Number }],
     xIsNext: { type: Boolean, default: true },
+    // Nội dung chat của của trận đấu
+    chat: [{ type: Schema.Types.ObjectId, ref: 'Chat' }],
   },
   { timestamps: true }
 );

@@ -4,8 +4,6 @@ const { Schema } = mongoose;
 
 const chatSchema = mongoose.Schema(
   {
-    // Thuộc về match nào
-    match: { type: Schema.Types.ObjectId, ref: 'Match' },
     // Thuộc về user nào
     user: { type: Schema.Types.ObjectId, ref: 'User' },
     // Nội dung chat
