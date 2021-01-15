@@ -7,7 +7,8 @@ const ApiError = require("../utils/ApiError");
 const matchService = require("./match.service");
 const userService = require("./user.service");
 const getAllRoom = async () => {
-  const rooms = await Room.find({ status: { $ne: "EMPTY" } });
+  // const rooms = await Room.find({ status: { $ne: "EMPTY" } });
+  const rooms = await Room.find();
   return rooms;
 };
 const suitableRoom = () => {};
