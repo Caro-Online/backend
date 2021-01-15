@@ -1,18 +1,18 @@
-const cryptoRandomString = require('crypto-random-string');
-const httpStatus = require('http-status');
-const moment = require('moment');
-const roomService = require('./room.service');
-const { Match, Room, User } = require('../models');
-const ApiError = require('../utils/ApiError');
-const { matchService } = require('.');
-const { async } = require('crypto-random-string');
+const cryptoRandomString = require("crypto-random-string");
+const httpStatus = require("http-status");
+const moment = require("moment");
+const roomService = require("./room.service");
+const { Match, Room, User } = require("../models");
+const ApiError = require("../utils/ApiError");
+const { matchService } = require(".");
+const { async } = require("crypto-random-string");
 
 const getMatchByMatchId = async (matchId) => {
-  const match = await Match.findById(matchId).populate('players');
+  const match = await Match.findById(matchId).populate("players");
   if (!match) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      'Không thể tìm thấy trận tương ứng!'
+      "Không thể tìm thấy trận tương ứng!"
     );
   }
   return match;
@@ -30,39 +30,43 @@ const createMatch = async (players, roomId, countdownDuration) => {
     timeExp: timeExp,
   });
   await match.save();
-  return Match.populate(match, { path: 'players' });
+  return Match.populate(match, { path: "players" });
 };
 // Id of room = _id (khác với RoomId)
 //Trả về match tạo sau nhất theo createdAt
 const getCurrentMatchByIdOfRoom = async (roomId) => {
-  console.log('roomId: ' + roomId);
+  console.log("roomId: " + roomId);
   const match = await Match.find({ room: roomId })
     .sort({ createdAt: -1 })
     .limit(1)
-    .populate('players');
+    .populate("players");
   return match;
 };
 
 const getHistoryByUserId = (userId) => {
-  console.log('getHistoryByUserId', userId);
+  console.log("getHistoryByUserId", userId);
   const match = Match.find({
     players: {
       $in: userId,
     },
   })
     .sort({ createdAt: -1 })
-    .populate('room')
-    .populate('players')
-    .populate({ path: "room", populate: { path: "chat", populate: { path: "user", select: 'name' } } })
+    .populate("room")
+    .populate("players")
+    .populate({
+      path: "room",
+      populate: { path: "chat", populate: { path: "user", select: "name" } },
+    });
   return match;
 };
 const getHistory = (data) => {
-  console.log('getHistory', data);
+  console.log("getHistory", data);
   const match = Match.find({
     room: data.roomId,
   })
     .sort({ createdAt: -1 })
-    .populate('players');
+    .populate("players")
+    .populate({ path: "chat", populate: { path: "user", select: "name" } });
   return match;
 };
 //thêm 1 bước đi vào lich sử
@@ -77,7 +81,7 @@ const addMove = (matchId, index, xIsNext, room) => {
     xIsNext: xIsNext,
     timeExp,
   };
-  return Match.findOneAndUpdate(filter, update, { new: true }).populate('room');
+  return Match.findOneAndUpdate(filter, update, { new: true }).populate("room");
 };
 const boardSize = 17;
 
@@ -95,7 +99,7 @@ const historyTo2DArray = (history) => {
   for (let h = 0; h < history.length; h++) {
     let i = Math.floor(history[h] / boardSize);
     let j = history[h] % boardSize;
-    array[i][j] = h % 2 === 0 ? 'X' : 'O';
+    array[i][j] = h % 2 === 0 ? "X" : "O";
   }
 
   return array;
@@ -306,8 +310,9 @@ const checkWin = async (updatedMatch, rule) => {
   const diffCup = players[0].cup - players[1].cup;
   const p1Offer = getCupOffer(players[0].cup, diffCup);
   const p2Offer = getCupOffer(players[1].cup, diffCup);
-  //checkwin 
-  let winRaw; let winner;
+  //checkwin
+  let winRaw;
+  let winner;
   if (rule) {
     winRaw = rule1Check(b, i, j);
   } else {
@@ -316,21 +321,21 @@ const checkWin = async (updatedMatch, rule) => {
   if (winRaw) {
     if (history.length % 2 === 1) {
       winner = updatedMatch.players[0]._id;
-      players[0].cup += p1Offer.plusCup
-      players[0].matchHavePlayed += 1
-      players[0].matchHaveWon += 1
-      players[1].cup -= p2Offer.subCup
-      players[1].matchHavePlayed += 1
+      players[0].cup += p1Offer.plusCup;
+      players[0].matchHavePlayed += 1;
+      players[0].matchHaveWon += 1;
+      players[1].cup -= p2Offer.subCup;
+      players[1].matchHavePlayed += 1;
     } else {
       winner = updatedMatch.players[1]._id;
-      players[0].cup -= p1Offer.subCup
-      players[0].matchHavePlayed += 1
-      players[1].cup += p2Offer.plusCup
-      players[1].matchHavePlayed += 1
-      players[1].matchHaveWon += 1
+      players[0].cup -= p1Offer.subCup;
+      players[0].matchHavePlayed += 1;
+      players[1].cup += p2Offer.plusCup;
+      players[1].matchHavePlayed += 1;
+      players[1].matchHaveWon += 1;
     }
     const cupDataChange = getCupChange(winner, updatedMatch.players);
-    return { winRaw, winner, cupDataChange, matchPlayers: players }
+    return { winRaw, winner, cupDataChange, matchPlayers: players };
   }
   return false;
 };
@@ -341,8 +346,8 @@ const updateFinnishMatch = async (winRaw, updatedMatch) => {
     { _id: match.room },
     {
       $set: {
-        'players.$[].isReady': false,
-        status: 'WAITING',
+        "players.$[].isReady": false,
+        status: "WAITING",
       },
     }
   );
@@ -355,7 +360,6 @@ const updateFinnishMatch = async (winRaw, updatedMatch) => {
         winner: players[0]._id,
       },
     });
-
   } else {
     winner = players[1]._id;
     await match.update({
@@ -364,18 +368,15 @@ const updateFinnishMatch = async (winRaw, updatedMatch) => {
         winner: players[1]._id,
       },
     });
-
   }
   await Promise.all([
-    User.findOneAndUpdate(
-      { _id: players[0]._id }, players[0]),
-    User.findOneAndUpdate(
-      { _id: players[1]._id }, players[1]),
+    User.findOneAndUpdate({ _id: players[0]._id }, players[0]),
+    User.findOneAndUpdate({ _id: players[1]._id }, players[1]),
   ]);
-}
+};
 
 const getCupChange = (winner, players) => {
-  console.log('update cup');
+  console.log("update cup");
   //Tính số cúp thưởng và phạt theo cúp hiện tại và chênh lệch cup
   const diffCup = players[0].cup - players[1].cup;
   const p1Offer = getCupOffer(players[0].cup, diffCup);
