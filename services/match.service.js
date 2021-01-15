@@ -67,7 +67,10 @@ const getHistory = (data) => {
   })
     .sort({ createdAt: -1 })
     .populate("players")
-    .populate({ path: "chat", populate: { path: "user", select: "name" } });
+    .populate({
+      path: "chat",
+      populate: { path: "user", select: "name imageUrl" },
+    });
   return match;
 };
 //thêm 1 bước đi vào lich sử
