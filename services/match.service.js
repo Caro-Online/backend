@@ -53,6 +53,7 @@ const getHistoryByUserId = (userId) => {
     .sort({ createdAt: -1 })
     .populate("room")
     .populate("players")
+    .populate("winner")
     .populate({
       path: "room",
       populate: { path: "chat", populate: { path: "user", select: "name" } },
