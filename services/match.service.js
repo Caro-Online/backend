@@ -55,9 +55,9 @@ const getHistoryByUserId = (userId) => {
     .populate("players")
     .populate("winner")
     .populate({
-      path: "room",
-      populate: { path: "chat", populate: { path: "user", select: "name" } },
-    });
+      path: "room"
+    })
+    .populate({ path: "chat", populate: { path: "user", select: "name" } })
   return match;
 };
 const getHistory = (data) => {

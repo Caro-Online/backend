@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 
 const catchAsync = require('../../utils/catchAsync');
 const { userService } = require('../../services');
+const { emitUserOnline } = require('../../services/socket.service');
 
 const getAllUser = catchAsync(async (req, res) => {
   const users = await userService.getAllUser(req);
@@ -22,6 +23,7 @@ const updateStatusToOnline = catchAsync(async (req, res) => {
   const userId = req.params.userId;
   let user = await userService.getUserById(userId);
   user = await userService.updateStatusToOnline(user);
+  emitUserOnline(user._id);
   res.status(httpStatus.OK).json({ success: true, user });
 });
 
