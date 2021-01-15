@@ -7,7 +7,10 @@ const ApiError = require("../utils/ApiError");
 const matchService = require("./match.service");
 const userService = require("./user.service");
 const getAllRoom = async () => {
-  // const rooms = await Room.find({ status: { $ne: "EMPTY" } });
+  const rooms = await Room.find({ status: { $ne: "EMPTY" } });
+  return rooms;
+};
+const getRooms = async () => {
   const rooms = await Room.find();
   return rooms;
 };
@@ -201,6 +204,7 @@ const updateRoomWhenPlayerNotReady = async (roomId, userId) => {
 };
 
 module.exports = {
+  getRooms,
   getAllRoom,
   getRoomByRoomId,
   getRoomById,

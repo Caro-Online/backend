@@ -6,7 +6,12 @@ const { userService, roomService, socketService } = require("../../services");
 const { emitRoomData } = require("../../services/socket.service");
 
 const getAllRoom = catchAsync(async (req, res) => {
-  const rooms = await roomService.getAllRoom();
+  const { isFull } = req.query;
+  let rooms = [];
+  if (isFull) rooms = await roomService.getRooms();
+  else {
+    rooms = await roomService.getAllRoom();
+  }
   if (!rooms || rooms.length === 0) {
     return res.status(httpStatus.OK).json({ success: true, rooms: [] });
   }
